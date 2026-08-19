@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="file" version="3.0" method="upgrade">
+    <name>modernsoftblue</name>
+    <version>1.0.0</version>
+    <creationDate>August 2026</creationDate>
+    <author>Jayden Russell</author>
+    <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
+    <authorUrl>https://simcoecurlingclub.ca</authorUrl>
+    <copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <description>Modern Soft Blue layout files for mod_facilitycalendar_event_list.</description>
+</extension>
