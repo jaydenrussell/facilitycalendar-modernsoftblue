@@ -1,6 +1,6 @@
 # SCC Card Layout for Facility Calendar Event List
 
-A modern, card-style layout override for the **mod_facilitycalendar_event_list** Joomla module. Selectable from the admin Module Layout dropdown — no plugins required.
+A modern, card-style layout override for the **mod_facilitycalendar_event_list** Joomla module. One install — everything is handled automatically.
 
 **Tested on:** Joomla 3.10.12 · tpl\_jdseattle (JD Seattle / Astroid)
 
@@ -18,89 +18,73 @@ A modern, card-style layout override for the **mod_facilitycalendar_event_list**
 
 ## Requirements
 
-1. The **mod\_facilitycalendar\_event_list** module must already be installed.
-2. The module's XML manifest must include the **Module Layout** dropdown (see [Module Manifest Patch](#module-manifest-patch) below).
-3. Upload `scc-calendar-badge.png` to `/images/` on your Joomla site (optional — the card renders without it).
+- **mod\_facilitycalendar\_event_list** must already be installed on the site.
 
 ## Installation
 
-### Build the zip
-
-From the repo root:
+### 1. Build or download the zip
 
 ```bash
 cd pkg_scccard
 zip -r ../pkg_scccard.zip .
 ```
 
-Or download the pre-built `pkg_scccard.zip` from the Releases page.
+Or download `pkg_scccard.zip` from the [Releases](https://github.com/jaydenrussell/scccard-layout/releases) page.
 
-### Install in Joomla
+### 2. Install in Joomla
 
-1. Go to **Extensions → Manage → Install**.
-2. Click **Upload Package File** and select `pkg_scccard.zip`.
-3. The package installs the override file to:
-   ```
-   templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/scccard.php
-   ```
+**Extensions → Manage → Install → Upload Package File** → select `pkg_scccard.zip`.
 
-### Select the layout
+The package automatically:
+- Installs the `scccard.php` override to `templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/`
+- Patches the module's XML manifest to add the **Module Layout** dropdown (idempotent — safe to re-install)
+- Copies `scc-calendar-badge.png` to `/images/` (if not already present)
 
-1. Go to **Extensions → Modules → Facility Calendar Event List**.
-2. Open the **Advanced** tab.
-3. Set **Module Layout** to **scccard**.
-4. Set **Show Title** to **Hide** (the card renders its own title — keeping "Show" creates duplicates).
-5. Save & close.
+Post-install messages will confirm what was done.
 
-### Clear cache
+### 3. Select the layout
 
-After installing, go to **System → Clear Cache** and purge the Astroid compiled CSS. Hard-refresh (`Ctrl+F5`) the front-end.
+**Extensions → Modules → Facility Calendar Event List → Advanced tab → Module Layout = scccard**
 
-## Module Manifest Patch
+Set **Show Title** to **Hide** (the card renders its own title — "Show" creates duplicates). Save & close.
 
-The module's default XML does **not** include a layout dropdown. The package installs the override file but does **not** modify the module's manifest (to avoid conflicts during module updates).
+### 4. Clear cache
 
-You must add the layout field manually (one-time edit):
-
-**File:** `modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml`
-
-Find:
-
-```xml
-<fieldset name="advanced">
-```
-
-Add immediately after:
-
-```xml
-<field
-    name="layout"
-    type="modulelayout"
-    label="JLayout Render Layout"
-    description="J_LAYOUT_RENDER_LAYOUT_DESC"
-    default="_:default"
-/>
-```
-
-This is the same mechanism used by the core `mod_menu` module. It adds a **Module Layout** dropdown under the Advanced tab. If the module is updated and the manifest is overwritten, re-apply this patch.
+**System → Clear Cache** → purge Astroid compiled CSS. Hard-refresh (`Ctrl+F5`) the front-end.
 
 ## Reverting
 
-In the module's **Advanced** tab, set **Module Layout** back to **Default**. The module returns to its original appearance immediately.
+In the module's **Advanced** tab, set **Module Layout** back to **Default**. Original appearance is restored immediately.
+
+## What the installer does
+
+The post-install script (`script.php`) runs automatically:
+
+1. Locates `modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml`
+2. Checks if the `layout` field (type `modulelayout`) already exists — if so, skips
+3. If not, injects the field into the `<fieldset name="advanced">` block
+4. Reports success or warns if the module wasn't found
+
+This is the same mechanism used by Joomla's core `mod_menu` module. If the module is updated and its manifest is overwritten, simply re-install this package — the script will re-apply the patch.
 
 ## File Structure
 
 ```
 pkg_scccard/
-├── pkg_scccard.xml                          # Package manifest
+├── pkg_scccard.xml              # Package manifest
+├── script.php                   # Post-install script (auto-patches module manifest)
+├── patch/
+│   └── mod_facilitycalendar_event_list.xml   # Reference copy of patched manifest
 └── scccard/
-    ├── scccard.xml                          # File extension manifest
+    ├── scccard.xml              # File extension manifest
     └── files/
+        ├── images/
+        │   └── scc-calendar-badge.png
         └── templates/
             └── tpl_jdseattle/
                 └── html/
                     └── mod_facilitycalendar_event_list/
-                        └── scccard.php      # The override
+                        └── scccard.php
 ```
 
 ## License

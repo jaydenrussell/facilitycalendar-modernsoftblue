@@ -11,6 +11,8 @@
     <license>GNU General Public License version 2 or later</license>
     <description>SCC Card layout override for the Facility Calendar Event List module. Adds a modern, card-style layout selectable from the Module Layout dropdown.</description>
 
+    <scriptfile>script.php</scriptfile>
+
     <files>
         <filename>scccard</filename>
     </files>
