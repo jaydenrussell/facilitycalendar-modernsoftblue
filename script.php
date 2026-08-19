@@ -37,14 +37,13 @@ class pkg_facilitycalendar_modernsoftblueInstallerScript
             return;
         }
 
-        $field = <<<'XML'
-				<field
-					name="layout"
-					type="modulelayout"
-					label="Module Layout"
-					description="Select how this module is rendered."
-					default="_:default"
-				/>XML;
+        $field = "\t\t\t\t<field\n"
+            . "\t\t\t\t\tname=\"layout\"\n"
+            . "\t\t\t\t\ttype=\"modulelayout\"\n"
+            . "\t\t\t\t\tlabel=\"Module Layout\"\n"
+            . "\t\t\t\t\tdescription=\"Select how this module is rendered.\"\n"
+            . "\t\t\t\t\tdefault=\"_:default\"\n"
+            . "\t\t\t\t/>";
 
         $pattern  = '/(<fieldset\s+name="advanced">)/';
         $replace  = '$1' . "\n" . $field;
