@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="package" version="3.0" method="upgrade">
+    <name>pkg_scccard</name>
+    <packagename>scccard</packagename>
+    <version>1.0.0</version>
+    <creationDate>August 2026</creationDate>
+    <author>Jayden Russell</author>
+    <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
+    <authorUrl>https://simcoecurlingclub.ca</authorUrl>
+    <copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <description>SCC Card layout override for the Facility Calendar Event List module. Adds a modern, card-style layout selectable from the Module Layout dropdown.</description>
+
+    <files>
+        <filename>scccard</filename>
+    </files>
+</extension>
