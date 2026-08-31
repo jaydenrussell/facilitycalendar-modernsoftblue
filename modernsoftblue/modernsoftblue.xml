@@ -1,12 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="file" version="3.0" method="upgrade">
-    <name>modernsoftblue</name>
-    <version>1.0.0</version>
+    <name>Facility Calendar Upcoming Event List — Modern Soft Blue</name>
+    <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
+    <version>1.0.1</version>
     <creationDate>August 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
     <authorUrl>https://simcoecurlingclub.ca</authorUrl>
     <copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <description>Modern Soft Blue layout files for mod_facilitycalendar_event_list.</description>
+    <description>Modern Soft Blue card-style layout files for the Facility Calendar Upcoming Event List module (mod_facilitycalendar_event_list).</description>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/en-GB.mod_facilitycalendar_upcomingeventlist_modernsoftblue.ini</language>
+        <language tag="en-GB">en-GB/en-GB.mod_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini</language>
+    </languages>
+
+    <install>
+        <file>modernsoftblue.css</file>
+    </install>
+    <update>
+        <file>modernsoftblue.css</file>
+    </update>
+
+    <media destination="mod_facilitycalendar_upcomingeventlist_modernsoftblue" folder="media">
+        <filename>modernsoftblue.css</filename>
+    </media>
 </extension>
