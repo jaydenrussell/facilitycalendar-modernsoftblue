@@ -1,77 +1,253 @@
 <?php
 /**
- * Facility Calendar Upcoming Event List — Modern Soft Blue — post-install script
+ * Facility Calendar Upcoming Event List — Modern Soft Blue — installer script
  *
- * Runs automatically after the package is installed.
- * Patches mod_facilitycalendar_event_list's manifest to add the
- * Module Layout dropdown (the layout field needed to select "modernsoftblue").
+ * Implements Joomla\CMS\Installer\InstallerScriptInterface for proper install,
+ * update, and uninstall lifecycle hooks (Joomla 3.8+).
+ *
+ * Responsibilities:
+ *   preflight  — abort install if Joomla or PHP version is too low
+ *   postflight — patch mod_facilitycalendar_event_list manifest with layout field
+ *   uninstall  — revert the manifest patch cleanly
+ *
+ * @copyright   Copyright (C) 2026 Simcoe Curling Club
+ * @license     GNU General Public License version 2 or later
  */
 defined('_JEXEC') or die;
 
-class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
+use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\InstallerAdapter;
+use Joomla\CMS\Installer\InstallerScriptInterface;
+use Joomla\CMS\Language\Text;
+
+class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript implements InstallerScriptInterface
 {
-    public function postinstall($parent)
+    /** Minimum Joomla version required */
+    private string $minimumJoomla = '3.8.0';
+
+    /** Minimum PHP version required */
+    private string $minimumPhp = '7.2.0';
+
+    /** Name of the upstream module this package patches */
+    private const MODULE_NAME     = 'mod_facilitycalendar_event_list';
+    private const MODULE_XML_PATH = JPATH_BASE . '/modules/' . self::MODULE_NAME . '/' . self::MODULE_NAME . '.xml';
+
+    /** Backup file placed alongside the module manifest during patch */
+    private const BACKUP_SUFFIX = '.msb-backup';
+
+    public function install(InstallerAdapter $adapter): bool
     {
-        $app = JFactory::getApplication();
+        return true;
+    }
+
+    public function update(InstallerAdapter $adapter): bool
+    {
+        return true;
+    }
+
+    public function uninstall(InstallerAdapter $adapter): bool
+    {
+        $app = Factory::getApplication();
+        $this->revertModuleManifestPatch($app);
+
+        $app->enqueueMessage(
+            Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_UNINSTALL_NOTICE'),
+            'notice'
+        );
+
+        return true;
+    }
+
+    public function preflight(string $type, InstallerAdapter $adapter): bool
+    {
+        $app = Factory::getApplication();
+
+        if (version_compare(PHP_VERSION, $this->minimumPhp, '<')) {
+            $app->enqueueMessage(
+                sprintf(
+                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_MIN_PHP'),
+                    $this->minimumPhp,
+                    PHP_VERSION
+                ),
+                'error'
+            );
+            return false;
+        }
+
+        if (version_compare(JVERSION, $this->minimumJoomla, '<')) {
+            $app->enqueueMessage(
+                sprintf(
+                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_MIN_JOOMLA'),
+                    $this->minimumJoomla,
+                    JVERSION
+                ),
+                'error'
+            );
+            return false;
+        }
+
+        return true;
+    }
+
+    public function postflight(string $type, InstallerAdapter $adapter): bool
+    {
+        $app = Factory::getApplication();
 
         $this->patchModuleManifest($app);
         $this->checkBadge($app);
+
+        return true;
     }
 
-    private function patchModuleManifest($app)
+    /**
+     * Inject the layout field into the upstream module's manifest using DOMDocument.
+     * A backup of the original manifest is created before writing.
+     */
+    private function patchModuleManifest($app): void
     {
-        $modulePath = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml';
-
-        if (!file_exists($modulePath)) {
+        if (!file_exists(self::MODULE_XML_PATH)) {
             $app->enqueueMessage(
-                '<strong>mod_facilitycalendar_event_list</strong> was not found. '
+                '<strong>' . self::MODULE_NAME . '</strong> was not found. '
                 . 'Install it first, then re-install this package to enable the layout dropdown.',
                 'warning'
             );
             return;
         }
 
-        $content = file_get_contents($modulePath);
+        $content = file_get_contents(self::MODULE_XML_PATH);
 
         if (strpos($content, 'type="modulelayout"') !== false) {
             return;
         }
 
-        $field = "\t\t\t\t<field\n"
-            . "\t\t\t\t\tname=\"layout\"\n"
-            . "\t\t\t\t\ttype=\"modulelayout\"\n"
-            . "\t\t\t\t\tlabel=\"Module Layout\"\n"
-            . "\t\t\t\t\tdescription=\"Select how this module is rendered.\"\n"
-            . "\t\t\t\t\tdefault=\"_:default\"\n"
-            . "\t\t\t\t/>";
+        $dom = new DOMDocument();
+        $dom->preserveWhiteSpace = true;
+        $dom->formatOutput       = false;
 
-        $pattern  = '/(<fieldset\s+name="advanced">)/';
-        $replace  = '$1' . "\n" . $field;
-        $newContent = preg_replace($pattern, $replace, $content, 1, $count);
+        libxml_use_internal_errors(true);
+        $loaded = $dom->loadXML($content);
+        libxml_clear_errors();
 
-        if ($count > 0 && @file_put_contents($modulePath, $newContent) !== false) {
+        if (!$loaded) {
             $app->enqueueMessage(
-                'Layout dropdown enabled — set <strong>Module Layout</strong> to <em>modernsoftblue</em> '
-                . 'in the module\'s Advanced tab.',
-                'success'
-            );
-        } else {
-            $app->enqueueMessage(
-                'Could not auto-patch the module manifest. '
+                'Could not parse the module manifest XML. '
                 . 'Add the layout field manually — see the README for instructions.',
                 'warning'
             );
+            return;
         }
+
+        $xpath = new DOMXPath($dom);
+
+        /** @var DOMElement $fieldset */
+        $fieldset = $xpath->query('//fieldset[@name="advanced"]')->item(0);
+
+        if (!$fieldset) {
+            $app->enqueueMessage(
+                'Could not find the <fieldset name="advanced"> block in the module manifest. '
+                . 'Add the layout field manually.',
+                'warning'
+            );
+            return;
+        }
+
+        $field = $dom->createElement('field');
+        $field->setAttribute('name',        'layout');
+        $field->setAttribute('type',        'modulelayout');
+        $field->setAttribute('label',       'Module Layout');
+        $field->setAttribute('description', 'Select how this module is rendered.');
+        $field->setAttribute('default',     '_:default');
+
+        $fieldset->appendChild($field);
+
+        $newContent = $dom->saveXML($dom->documentElement);
+
+        if (!is_string($newContent) || strlen($newContent) === 0) {
+            $app->enqueueMessage(
+                'Could not serialize the updated manifest XML. '
+                . 'Add the layout field manually.',
+                'warning'
+            );
+            return;
+        }
+
+        if (!is_writable(self::MODULE_XML_PATH)) {
+            $app->enqueueMessage(
+                'The module manifest is not writable. '
+                . 'Make <code>' . htmlspecialchars(self::MODULE_XML_PATH, ENT_QUOTES, 'UTF-8')
+                . '</code> writable, then re-install this package.',
+                'warning'
+            );
+            return;
+        }
+
+        if (!copy(self::MODULE_XML_PATH, self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
+            $app->enqueueMessage(
+                'Could not create a backup of the module manifest before patching. '
+                . 'Ensure the directory is writable.',
+                'warning'
+            );
+            return;
+        }
+
+        $bytes = @file_put_contents(self::MODULE_XML_PATH, $newContent, LOCK_EX);
+
+        if ($bytes === false) {
+            @copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
+            $app->enqueueMessage(
+                'Could not write the patched manifest. '
+                . 'The original file has been restored from backup. '
+                . 'Check file permissions and try again.',
+                'warning'
+            );
+            return;
+        }
+
+        $app->enqueueMessage(
+            Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_SUCCESS'),
+            'success'
+        );
     }
 
-    private function checkBadge($app)
+    /**
+     * Revert the module manifest to the backup taken at install time.
+     * Silently removes the backup after a successful restore.
+     */
+    private function revertModuleManifestPatch($app): void
+    {
+        $backupPath = self::MODULE_XML_PATH . self::BACKUP_SUFFIX;
+
+        if (!file_exists($backupPath)) {
+            return;
+        }
+
+        if (is_writable(self::MODULE_XML_PATH) && is_readable($backupPath)) {
+            $restored = @copy($backupPath, self::MODULE_XML_PATH);
+
+            if ($restored) {
+                @unlink($backupPath);
+                return;
+            }
+        }
+
+        $app->enqueueMessage(
+            'Could not restore the original module manifest from backup. '
+            . 'The backup file remains at <code>' . htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
+            . '</code>.',
+            'warning'
+        );
+    }
+
+    /**
+     * Check that the SCC badge image exists in /images/ and notify if missing.
+     */
+    private function checkBadge($app): void
     {
         $badgePath = JPATH_BASE . '/images/scc-calendar-badge.png';
 
         if (!file_exists($badgePath)) {
             $app->enqueueMessage(
-                'Upload <strong>scc-calendar-badge.png</strong> to <code>/images/</code> '
-                . 'for the floating badge on the card.',
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BADGE_MISSING'),
                 'notice'
             );
         }
