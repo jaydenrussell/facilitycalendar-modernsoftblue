@@ -1,3 +1,7 @@
 *.zip
+*.log
+error_log
 .DS_Store
 Thumbs.db
+/administrator/components/com_admin/cache/
+/logs/
