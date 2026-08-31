@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="package" version="3.0" method="upgrade">
-    <name>pkg_facilitycalendar_modernsoftblue</name>
-    <packagename>facilitycalendar-modernsoftblue</packagename>
+    <name>Facility Calendar Upcoming Event List — Modern Soft Blue</name>
+    <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
     <version>1.0.0</version>
     <creationDate>August 2026</creationDate>
     <author>Jayden Russell</author>
@@ -9,7 +9,7 @@
     <authorUrl>https://simcoecurlingclub.ca</authorUrl>
     <copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <description>Modern Soft Blue theme for the Facility Calendar Event List module. Adds a clean, card-style layout with light rounded date tiles, hairline dividers, and muted times.</description>
+    <description>Modern Soft Blue card-style theme for the Facility Calendar Upcoming Event List module (mod_facilitycalendar_event_list). Adds light rounded date tiles, hairline row dividers, semibold titles, and muted times with a clock icon.</description>
 
     <scriptfile>script.php</scriptfile>
 
@@ -18,7 +18,7 @@
     </files>
 
     <updateservers>
-        <server type="extension" priority="1" name="Facility Calendar Modern Soft Blue Updates">
+        <server type="extension" priority="1" name="Facility Calendar Upcoming Event List — Modern Soft Blue Updates">
             https://raw.githubusercontent.com/jaydenrussell/scccard-layout/master/update.xml
         </server>
     </updateservers>
