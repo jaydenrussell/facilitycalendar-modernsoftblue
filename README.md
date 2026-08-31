@@ -1,6 +1,6 @@
-# Facility Calendar — Modern Soft Blue
+# Facility Calendar Upcoming Event List — Modern Soft Blue
 
-A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla module. One install — everything is handled automatically.
+A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla module's upcoming event list output. One install — everything is handled automatically.
 
 **Tested on:** Joomla 3.10.12 · tpl\_jdseattle (JD Seattle / Astroid)
 
@@ -18,7 +18,7 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 
 ## Requirements
 
-- **mod\_facilitycalendar\_event_list** must already be installed on the site.
+- **mod\_facilitycalendar\_event\_list** must already be installed on the site.
 
 ## Installation
 
@@ -74,8 +74,6 @@ facilitycalendar-modernsoftblue/
 ├── facilitycalendar-modernsoftblue.xml   # Package manifest
 ├── script.php                            # Post-install script (auto-patches module manifest)
 ├── update.xml                            # Joomla update server XML
-├── patch/
-│   └── mod_facilitycalendar_event_list.xml   # Reference copy of patched manifest
 └── modernsoftblue/
     ├── modernsoftblue.xml                # File extension manifest
     └── files/
