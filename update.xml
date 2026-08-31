@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <updates>
     <update>
-        <name>Facility Calendar Modern Soft Blue</name>
-        <description>Modern Soft Blue theme for mod_facilitycalendar_event_list</description>
-        <element>pkg_facilitycalendar_modernsoftblue</element>
+        <name>Facility Calendar Upcoming Event List — Modern Soft Blue</name>
+        <description>Modern Soft Blue card-style theme for the Facility Calendar Upcoming Event List module (mod_facilitycalendar_event_list).</description>
+        <element>pkg_facilitycalendar_upcomingeventlist_modernsoftblue</element>
         <type>package</type>
         <version>1.0.0</version>
         <downloads>
@@ -12,6 +12,6 @@
             </downloadurl>
         </downloads>
         <infourl>https://github.com/jaydenrussell/scccard-layout</infourl>
-        <targetplatform name="joomla" version="3\." />
+        <targetplatform name="joomla" version="3\.\" />
     </update>
 </updates>
