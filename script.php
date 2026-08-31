@@ -1,6 +1,6 @@
 <?php
 /**
- * Facility Calendar Modern Soft Blue — post-install script
+ * Facility Calendar Upcoming Event List — Modern Soft Blue — post-install script
  *
  * Runs automatically after the package is installed.
  * Patches mod_facilitycalendar_event_list's manifest to add the
@@ -8,7 +8,7 @@
  */
 defined('_JEXEC') or die;
 
-class pkg_facilitycalendar_modernsoftblueInstallerScript
+class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 {
     public function postinstall($parent)
     {
