@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="package" version="3.0" method="upgrade">
-    <name>Facility Calendar Upcoming Event List — Modern Soft Blue</name>
+    <name>PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE</name>
     <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
     <version>1.0.1</version>
     <creationDate>August 2026</creationDate>
@@ -9,7 +9,7 @@
     <authorUrl>https://simcoecurlingclub.ca</authorUrl>
     <copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <description>Modern Soft Blue card-style theme for the Facility Calendar Upcoming Event List module (mod_facilitycalendar_event_list). Adds light rounded date tiles, hairline row dividers, semibold titles, and muted times with a clock icon.</description>
+    <description>PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_DESC</description>
 
     <blockChildUninstall>true</blockChildUninstall>
 
