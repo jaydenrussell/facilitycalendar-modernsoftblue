@@ -172,9 +172,10 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         if (!is_writable(self::MODULE_XML_PATH)) {
             $app->enqueueMessage(
-                'The module manifest is not writable. '
-                . 'Make <code>' . htmlspecialchars(self::MODULE_XML_PATH, ENT_QUOTES, 'UTF-8')
-                . '</code> writable, then re-install this package.',
+                sprintf(
+                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_XML_NOT_WRITABLE'),
+                    htmlspecialchars(self::MODULE_XML_PATH, ENT_QUOTES, 'UTF-8')
+                ),
                 'warning'
             );
             return;
@@ -182,8 +183,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         if (!copy(self::MODULE_XML_PATH, self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
             $app->enqueueMessage(
-                'Could not create a backup of the module manifest before patching. '
-                . 'Ensure the directory is writable.',
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BACKUP_FAILED'),
                 'warning'
             );
             return;
@@ -194,9 +194,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         if ($bytes === false) {
             @copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
             $app->enqueueMessage(
-                'Could not write the patched manifest. '
-                . 'The original file has been restored from backup. '
-                . 'Check file permissions and try again.',
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_WRITE_FAILED'),
                 'warning'
             );
             return;
@@ -225,14 +223,19 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
             if ($restored) {
                 @unlink($backupPath);
+                $app->enqueueMessage(
+                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_MANIFEST'),
+                    'notice'
+                );
                 return;
             }
         }
 
         $app->enqueueMessage(
-            'Could not restore the original module manifest from backup. '
-            . 'The backup file remains at <code>' . htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
-            . '</code>.',
+            sprintf(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
+                htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
+            ),
             'warning'
         );
     }
