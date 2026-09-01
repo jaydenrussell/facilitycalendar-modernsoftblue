@@ -1,7 +1,7 @@
 <?php
 /**
- * Facility Calendar — remove orphaned OLD package(s) (pkg_facilitycalendar-modernsoftblue)
- * ------------------------------------------------------------------------------------
+ * Facility Calendar — remove orphaned OLD package(s)
+ * -------------------------------------------------
  * One-time cleanup helper. On INSTALL it deletes the stale, orphaned OLD
  * package row(s) from the Joomla `#__extensions` table (and any leftover
  * `#__schemas` rows), so the Extension Manager stops showing the old,
@@ -9,12 +9,13 @@
  *
  * It uses the site's existing database connection (configuration.php), so NO
  * database login is required. It does NOT touch the newer package
- * (`pkg_facilitycalendar-upcomingeventlist-modernsoftblue`) or any files.
+ * (`pkg_facilitycalendar_upcomingeventlist_modernsoftblue`) or any files.
  *
- * The stored `element` is derived by Joomla from the OLD `<packagename>`
- * (`facilitycalendar-modernsoftblue`), so it is matched here by a LIKE pattern
- * rather than an exact string — this is safe because the NEW package's element
- * is explicitly excluded.
+ * IMPORTANT: The old package's stored `element` is `pkg_facilitycalendar_modernsoftblue`
+ * (underlines), as shown in the Extension Manager. Joomla stores the element
+ * derived from the old manifest's <name> tag. We therefore match BOTH the
+ * underlined element (the real one) and the hyphenated form (in case some
+ * versions derived it from <packagename>). The new package is excluded by name.
  *
  * IMPORTANT: delete this helper's zip + any copied files once you're done.
  */
@@ -32,14 +33,22 @@ class pkg_facilitycalendar_msb_old_cleanupInstallerScript
 		$db = Factory::getDbo();
 		$removed = array();
 
-		// Find every Package row belonging to the OLD package.
-		// The new package's element is 'pkg_facilitycalendar-upcomingeventlist-modernsoftblue'
-		// and is excluded so it is never touched.
+		// Match ONLY package rows that belong to the OLD "Modern Soft Blue"
+		// facility-calendar package — by element (underlines OR hyphens), while
+		// explicitly excluding the newer package so it is never touched.
 		$query = $db->getQuery(true)
 			->select($db->quoteName(array('extension_id', 'element', 'name')))
 			->from($db->quoteName('#__extensions'))
 			->where($db->quoteName('type') . ' = ' . $db->quote('package'))
-			->where($db->quoteName('element') . ' LIKE ' . $db->quote('%facilitycalendar-modernsoftblue%'))
+			->where(
+				'('
+				. $db->quoteName('element') . ' = ' . $db->quote('pkg_facilitycalendar_modernsoftblue')
+				. ' OR '
+				. $db->quoteName('element') . ' = ' . $db->quote('pkg_facilitycalendar-modernsoftblue')
+				. ' OR '
+				. $db->quoteName('element') . ' LIKE ' . $db->quote('%facilitycalendar_modernsoftblue%')
+				. ')'
+			)
 			->where($db->quoteName('element') . ' NOT LIKE ' . $db->quote('%upcomingeventlist%'));
 		$db->setQuery($query);
 		$rows = $db->loadObjectList();
@@ -77,9 +86,10 @@ class pkg_facilitycalendar_msb_old_cleanupInstallerScript
 		else
 		{
 			$app->enqueueMessage(
-				'No old package row was found (it may already be removed, or its '
-				. 'element differs from the expected pattern). Refresh the Extension '
-				. 'Manager — if it is still listed, reply with the exact row text.',
+				'No old package row was removed. It may already be gone, or its '
+				. 'element differs from the expected values. Refresh the Extension '
+				. 'Manager — if the old package is still listed, reply with the EXACT '
+				. 'Name and Element text so it can be matched precisely.',
 				'warning'
 			);
 		}
