@@ -1,0 +1,1 @@
+Marker file for the one-time facility-calendar package cleanup helper. No data; removed on uninstall.
