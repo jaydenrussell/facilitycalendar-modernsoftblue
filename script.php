@@ -110,8 +110,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         if (!file_exists(self::MODULE_XML_PATH)) {
             $app->enqueueMessage(
-                '<strong>' . self::MODULE_NAME . '</strong> was not found. '
-                . 'Install it first, then re-install this package to enable the layout dropdown.',
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_NOT_FOUND'),
                 'warning'
             );
             return;
@@ -133,8 +132,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         if (!$loaded) {
             $app->enqueueMessage(
-                'Could not parse the module manifest XML. '
-                . 'Add the layout field manually — see the README for instructions.',
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
                 'warning'
             );
             return;
@@ -147,8 +145,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         if (!$fieldset) {
             $app->enqueueMessage(
-                'Could not find the <fieldset name="advanced"> block in the module manifest. '
-                . 'Add the layout field manually.',
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
                 'warning'
             );
             return;
@@ -167,8 +164,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         if (!is_string($newContent) || strlen($newContent) === 0) {
             $app->enqueueMessage(
-                'Could not serialize the updated manifest XML. '
-                . 'Add the layout field manually.',
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
                 'warning'
             );
             return;
