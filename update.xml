@@ -6,9 +6,9 @@
         <element>pkg_facilitycalendar_upcomingeventlist_modernsoftblue</element>
         <type>package</type>
         <client>site</client>
-        <version>1.5.0</version>
+        <version>1.5.1</version>
         <author>jaydenrussell</author>
-        <downloadurl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.5.0/facilitycalendar-modernsoftblue.zip</downloadurl>
+        <downloadurl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.5.1/facilitycalendar-modernsoftblue.zip</downloadurl>
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <changelogurl>https://jaydenrussell.github.io/facilitycalendar-modernsoftblue/CHANGELOG.xml</changelogurl>
         <sha256>F379DC333C3D9D0B68396ACD511A48876747260DE6AFE58F34C2224916623A8F</sha256>
