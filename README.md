@@ -92,9 +92,7 @@ facilitycalendar-modernsoftblue/
         ├── language/
         │   └── en-GB/
         │       ├── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini
-        │       ├── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
-        │       ├── en-GB.mod_facilitycalendar_upcomingeventlist_modernsoftblue.ini
-        │       └── en-GB.mod_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
+        │       └── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
         ├── media/
         │   └── mod_facilitycalendar_upcomingeventlist_modernsoftblue/
         │       └── modernsoftblue.css

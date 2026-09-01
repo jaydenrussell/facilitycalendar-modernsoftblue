@@ -22,11 +22,16 @@
  *
  * Styles are loaded from the Joomla media system via the document API,
  * not embedded inline, so they can be cached by the browser/CDN.
+ * `detectDebug => false` suppresses the built-in minified-file lookup (we
+ * ship only modernsoftblue.css; debug mode does not require a .min variant).
+ * A cache-busting query string (file mtime) is appended so the browser and
+ * CDN fetch a fresh copy immediately after a version update without needing
+ * a URL change.
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\HTML\HTMLHelper;
 
 /** Scoped wrapper ID — deterministic, no randomness needed */
 $msb_id = 'msb-facilitycalendar';
@@ -34,14 +39,18 @@ $msb_id = 'msb-facilitycalendar';
 /** Absolute path to the upstream module's default layout */
 $modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
 
-/** Enqueue the external CSS from the Joomla media folder */
-$doc   = Factory::getDocument();
-$media = Uri::root() . 'media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css';
-$doc->addStyleSheet($media);
+/** Path to the CSS file so we can extract its mtime for cache busting */
+$cssPath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css';
+$cssMtime = @is_file($cssPath) ? filemtime($cssPath) : time();
+
+HTMLHelper::stylesheet(
+    'mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css?' . $cssMtime,
+    ['relative' => true, 'detectDebug' => false]
+);
 
 /** Guard: fatal error is worse than a graceful skip */
 if (!file_exists($modTmpl)) : ?>
-  <?php if ($app->get('debug')) : ?>
+  <?php if (Factory::getApplication()->get('debug')) : ?>
     <p><strong>[msb]</strong> Upstream layout not found: <code><?php echo htmlspecialchars($modTmpl, ENT_QUOTES, 'UTF-8'); ?></code></p>
   <?php endif; ?>
   <?php return; ?>

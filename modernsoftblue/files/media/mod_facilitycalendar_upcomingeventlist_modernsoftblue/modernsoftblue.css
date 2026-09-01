@@ -18,6 +18,9 @@
   margin: 0 0 1.5rem 0;
   overflow: visible;
   position: relative;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ---- Card Title ---- */
@@ -30,6 +33,7 @@
   text-transform: none;
   margin: 0 0 0.7rem 0;
   padding: 0 0 0.55rem 0.7rem;
+  line-height: 1.25;
 }
 
 /* Blue accent bar on the left of the title */
@@ -52,12 +56,21 @@
   right: 14px;
   width: 52px;
   height: 52px;
+  /*
+   * The badge is shipped to the site /images/ directory by the installer.
+   * Resolved relative to the media folder where this CSS lives:
+   *   media/mod_.../modernsoftblue.css
+   *   -> up one (..): media/
+   *   -> up two (../..): site root
+   *   -> /images/scc-calendar-badge.png
+   */
   background-image: url("../../images/scc-calendar-badge.png");
   background-size: contain;
   background-repeat: no-repeat;
   transform: rotate(9deg);
   filter: drop-shadow(0 6px 10px rgba(17, 24, 39, 0.25));
   pointer-events: none;
+  z-index: 1;
 }
 
 /* ---- Event List ---- */
@@ -103,7 +116,8 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-#msb-facilitycalendar .facility-upcoming-events li.row:hover .facility-event-date {
+#msb-facilitycalendar .facility-upcoming-events li.row:hover .facility-event-date,
+#msb-facilitycalendar .facility-upcoming-events li.row:focus-within .facility-event-date {
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(24, 144, 215, 0.15);
 }
@@ -134,6 +148,7 @@
 /* ---- Event Details Column ---- */
 #msb-facilitycalendar .facility-col-2 {
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 #msb-facilitycalendar .facility-col-2 > div:first-child {
@@ -146,9 +161,11 @@
 #msb-facilitycalendar .facility-col-2 a {
   color: #1890d7;
   text-decoration: none;
+  word-break: break-word;
 }
 
-#msb-facilitycalendar .facility-col-2 a:hover {
+#msb-facilitycalendar .facility-col-2 a:hover,
+#msb-facilitycalendar .facility-col-2 a:focus {
   text-decoration: underline;
 }
 
@@ -180,4 +197,78 @@
   height: 11px;
   flex-shrink: 0;
   background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"%3E%3Ccircle cx="8" cy="8" r="6.4" fill="none" stroke="%237a8ba0" stroke-width="1.4"/%3E%3Cpath d="M8 4.4V8l2.6 1.6" fill="none" stroke="%237a8ba0" stroke-width="1.4" stroke-linecap="round"/%3E%3C/svg%3E') center/contain no-repeat;
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  #msb-facilitycalendar .facility-event-date,
+  #msb-facilitycalendar .facility-upcoming-events li.row:hover .facility-event-date,
+  #msb-facilitycalendar .facility-upcoming-events li.row:focus-within .facility-event-date {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ---- Responsive: tablet ---- */
+@media (max-width: 768px) {
+  #msb-facilitycalendar .msb-card {
+    padding: 1rem 1rem;
+    border-radius: 12px;
+  }
+
+  #msb-facilitycalendar .msb-card--events::after {
+    width: 42px;
+    height: 42px;
+    top: -12px;
+    right: 10px;
+  }
+
+  #msb-facilitycalendar .facility-event-date {
+    width: 48px;
+    height: 52px;
+    border-radius: 10px;
+  }
+
+  #msb-facilitycalendar .facility-event-day {
+    font-size: 19px;
+  }
+
+  #msb-facilitycalendar .facility-event-month {
+    font-size: 9px;
+  }
+}
+
+/* ---- Responsive: phone ---- */
+@media (max-width: 480px) {
+  #msb-facilitycalendar .msb-card {
+    padding: 0.85rem 0.9rem;
+    border-radius: 10px;
+  }
+
+  #msb-facilitycalendar .msb-card-title {
+    font-size: 0.98rem;
+  }
+
+  #msb-facilitycalendar .facility-upcoming-events li.row {
+    gap: 0.6rem;
+    padding: 0.45rem 0;
+  }
+
+  #msb-facilitycalendar .facility-event-date {
+    width: 44px;
+    height: 48px;
+  }
+
+  #msb-facilitycalendar .facility-event-day {
+    font-size: 17px;
+  }
+
+  #msb-facilitycalendar .facility-event-month {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  #msb-facilitycalendar .facility-col-2 > div:first-child {
+    font-size: 0.9rem;
+  }
 }
