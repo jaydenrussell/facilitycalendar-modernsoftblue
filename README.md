@@ -39,9 +39,9 @@ Or download `facilitycalendar-upcomingeventlist-modernsoftblue.zip` from the [Re
 
 The package automatically:
 - Installs the `modernsoftblue.php` layout to `templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/`
-- Installs the `modernsoftblue.css` stylesheet to the Joomla media folder
+- Installs the `modernsoftblue.css` stylesheet and badge to the Joomla media folder
 - Patches the module's XML manifest to add the **Module Layout** dropdown (idempotent — safe to re-install)
-- Checks for `scc-calendar-badge.png` in `/images/` and warns if missing
+- Checks for `scc-calendar-badge.png` in the media folder and warns if missing
 
 Post-install messages will confirm what was done.
 
@@ -87,15 +87,14 @@ facilitycalendar-modernsoftblue/
 └── modernsoftblue/
     ├── modernsoftblue.xml                # File extension manifest
     └── files/
-        ├── images/
-        │   └── scc-calendar-badge.png
         ├── language/
         │   └── en-GB/
         │       ├── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini
         │       └── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
         ├── media/
         │   └── mod_facilitycalendar_upcomingeventlist_modernsoftblue/
-        │       └── modernsoftblue.css
+        │       ├── modernsoftblue.css
+        │       └── scc-calendar-badge.png
         └── templates/
             └── tpl_jdseattle/
                 └── html/

@@ -56,15 +56,10 @@
   right: 14px;
   width: 52px;
   height: 52px;
-  /*
-   * The badge is shipped to the site /images/ directory by the installer.
-   * Resolved relative to the media folder where this CSS lives:
-   *   media/mod_.../modernsoftblue.css
-   *   -> up one (..): media/
-   *   -> up two (../..): site root
-   *   -> /images/scc-calendar-badge.png
-   */
-  background-image: url("../../images/scc-calendar-badge.png");
+  /* Badge shipped into the same media folder as this stylesheet.
+     Resolved by the browser as a same-folder relative URL,
+     independent of the site's /images/ directory layout. */
+  background-image: url("scc-calendar-badge.png");
   background-size: contain;
   background-repeat: no-repeat;
   transform: rotate(9deg);

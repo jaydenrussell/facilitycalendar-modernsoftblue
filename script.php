@@ -38,6 +38,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     /** Backup file placed alongside the module manifest during patch */
     private const BACKUP_SUFFIX = '.msb-backup';
 
+    /** Lock file suffix to prevent concurrent backup/restore operations */
+    private const LOCK_SUFFIX = '.msb-lock';
+
     public function install(InstallerAdapter $adapter): bool
     {
         return true;
@@ -103,8 +106,45 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     }
 
     /**
+     * Acquire an exclusive lock on the module manifest to prevent
+     * concurrent backup/restore race conditions.
+     */
+    private function acquireLock(): ?resource
+    {
+        $lockPath = self::MODULE_XML_PATH . self::LOCK_SUFFIX;
+        $handle = @fopen($lockPath, 'w');
+
+        if (!is_resource($handle)) {
+            return null;
+        }
+
+        if (!flock($handle, LOCK_EX | LOCK_NB)) {
+            fclose($handle);
+            @unlink($lockPath);
+            return null;
+        }
+
+        return $handle;
+    }
+
+    /**
+     * Release the lock and remove the lock file.
+     */
+    private function releaseLock($handle): void
+    {
+        if (!is_resource($handle)) {
+            return;
+        }
+
+        flock($handle, LOCK_UN);
+        fclose($handle);
+        @unlink(self::MODULE_XML_PATH . self::LOCK_SUFFIX);
+    }
+
+    /**
      * Inject the layout field into the upstream module's manifest using DOMDocument.
      * A backup of the original manifest is created before writing.
+     * Uses file locking to prevent concurrent backup/restore race conditions.
      */
     private function patchModuleManifest($app): void
     {
@@ -126,9 +166,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         $dom->preserveWhiteSpace = true;
         $dom->formatOutput       = false;
 
-        libxml_use_internal_errors(true);
-        $loaded = $dom->loadXML($content);
-        libxml_clear_errors();
+        libxml_disable_entity_loader(true);
+        $loaded = $dom->loadXML($content, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
 
         if (!$loaded) {
             $app->enqueueMessage(
@@ -181,7 +220,18 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             return;
         }
 
+        $lockHandle = $this->acquireLock();
+
+        if ($lockHandle === null) {
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BACKUP_FAILED'),
+                'warning'
+            );
+            return;
+        }
+
         if (!copy(self::MODULE_XML_PATH, self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
+            $this->releaseLock($lockHandle);
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BACKUP_FAILED'),
                 'warning'
@@ -190,6 +240,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
 
         $bytes = @file_put_contents(self::MODULE_XML_PATH, $newContent, LOCK_EX);
+        $this->releaseLock($lockHandle);
 
         if ($bytes === false) {
             @copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
@@ -208,27 +259,56 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
     /**
      * Revert the module manifest to the backup taken at install time.
-     * Silently removes the backup after a successful restore.
+     * Refuses to proceed if the backup is missing.
+     * Uses file locking to prevent concurrent backup/restore race conditions.
      */
     private function revertModuleManifestPatch($app): void
     {
         $backupPath = self::MODULE_XML_PATH . self::BACKUP_SUFFIX;
 
         if (!file_exists($backupPath)) {
+            $app->enqueueMessage(
+                sprintf(
+                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
+                    'No backup file found at <code>' . htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8') . '</code>; cannot revert a patch that was never applied.'
+                ),
+                'warning'
+            );
             return;
         }
 
-        if (is_writable(self::MODULE_XML_PATH) && is_readable($backupPath)) {
-            $restored = @copy($backupPath, self::MODULE_XML_PATH);
+        $lockHandle = $this->acquireLock();
 
-            if ($restored) {
-                @unlink($backupPath);
-                $app->enqueueMessage(
-                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_MANIFEST'),
-                    'notice'
-                );
-                return;
-            }
+        if ($lockHandle === null) {
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
+                'warning'
+            );
+            return;
+        }
+
+        if (!is_writable(self::MODULE_XML_PATH) || !is_readable($backupPath)) {
+            $this->releaseLock($lockHandle);
+            $app->enqueueMessage(
+                sprintf(
+                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
+                    htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
+                ),
+                'warning'
+            );
+            return;
+        }
+
+        $restored = @copy($backupPath, self::MODULE_XML_PATH);
+        @unlink($backupPath);
+        $this->releaseLock($lockHandle);
+
+        if ($restored) {
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_MANIFEST'),
+                'notice'
+            );
+            return;
         }
 
         $app->enqueueMessage(
@@ -241,11 +321,11 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     }
 
     /**
-     * Check that the SCC badge image exists in /images/ and notify if missing.
+     * Check that the SCC badge image exists in the media folder and notify if missing.
      */
     private function checkBadge($app): void
     {
-        $badgePath = JPATH_BASE . '/images/scc-calendar-badge.png';
+        $badgePath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/scc-calendar-badge.png';
 
         if (!file_exists($badgePath)) {
             $app->enqueueMessage(

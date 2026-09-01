@@ -24,9 +24,10 @@
  * not embedded inline, so they can be cached by the browser/CDN.
  * `detectDebug => false` suppresses the built-in minified-file lookup (we
  * ship only modernsoftblue.css; debug mode does not require a .min variant).
- * A cache-busting query string (file mtime) is appended so the browser and
+ * A cache-busting query string (package version) is appended so the browser and
  * CDN fetch a fresh copy immediately after a version update without needing
- * a URL change.
+ * a URL change. The version is stable across deploys and does not depend on
+ * filesystem mtime, which can return false on flaky or cached I/O.
  */
 defined('_JEXEC') or die;
 
@@ -39,8 +40,8 @@ $msb_id = 'msb-facilitycalendar';
 /** Absolute path to the upstream module's default layout */
 $modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
 
-/** Cache-busting query string (CSS file mtime) so browsers and CDNs fetch a fresh copy immediately after a version update */
-$cssMtime = @is_file(JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css') ? filemtime(JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css') : time();
+/** Cache-busting query string (package version) so browsers/CDNs fetch a fresh copy after a version update. Stable across deploys; does not depend on filesystem mtime. */
+$cssMtime = '1.5.1';
 
 HTMLHelper::stylesheet(
     'mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css?' . $cssMtime,
@@ -55,6 +56,15 @@ if (!file_exists($modTmpl)) : ?>
   <?php return; ?>
 <?php endif; ?>
 
+/** Validate the upstream template path: must be a regular file within the upstream module's tmpl directory, not a symlink or device. */
+$modTmplReal = realpath($modTmpl);
+if ($modTmplReal === false || strpos($modTmplReal, JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/') !== 0) : ?>
+  <?php if (Factory::getApplication()->get('debug')) : ?>
+    <p><strong>[msb]</strong> Upstream layout path invalid or outside module directory: <code><?php echo htmlspecialchars($modTmpl, ENT_QUOTES, 'UTF-8'); ?></code></p>
+  <?php endif; ?>
+  <?php return; ?>
+<?php endif; ?>
+
 <div id="<?php echo $msb_id; ?>">
   <section class="msb-card msb-card--events">
     <?php if (trim($module->title) !== '') : ?>
@@ -63,7 +73,7 @@ if (!file_exists($modTmpl)) : ?>
     <div class="msb-card-body">
       <?php
       ob_start();
-      require $modTmpl;
+      require $modTmplReal;
       $html = ob_get_clean();
 
       $html = preg_replace_callback(
