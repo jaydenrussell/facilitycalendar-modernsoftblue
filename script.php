@@ -54,7 +54,10 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     public function uninstall(InstallerAdapter $adapter): bool
     {
         $app = Factory::getApplication();
-        $this->revertModuleManifestPatch($app);
+
+        if (!$this->revertModuleManifestPatch($app)) {
+            return false;
+        }
 
         $app->enqueueMessage(
             Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_UNINSTALL_NOTICE'),
@@ -99,7 +102,10 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        $this->patchModuleManifest($app);
+        if (!$this->patchModuleManifest($app)) {
+            return false;
+        }
+
         $this->checkBadge($app);
 
         return true;
@@ -112,15 +118,18 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     private function acquireLock(): ?resource
     {
         $lockPath = self::MODULE_XML_PATH . self::LOCK_SUFFIX;
-        $handle = @fopen($lockPath, 'w');
+        $handle = fopen($lockPath, 'w');
 
         if (!is_resource($handle)) {
             return null;
         }
 
         if (!flock($handle, LOCK_EX | LOCK_NB)) {
+            flock($handle, LOCK_UN);
             fclose($handle);
-            @unlink($lockPath);
+            if (file_exists($lockPath)) {
+                unlink($lockPath);
+            }
             return null;
         }
 
@@ -138,7 +147,10 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         flock($handle, LOCK_UN);
         fclose($handle);
-        @unlink(self::MODULE_XML_PATH . self::LOCK_SUFFIX);
+        $lockPath = self::MODULE_XML_PATH . self::LOCK_SUFFIX;
+        if (file_exists($lockPath)) {
+            unlink($lockPath);
+        }
     }
 
     /**
@@ -146,21 +158,21 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
      * A backup of the original manifest is created before writing.
      * Uses file locking to prevent concurrent backup/restore race conditions.
      */
-    private function patchModuleManifest($app): void
+    private function patchModuleManifest($app): bool
     {
         if (!file_exists(self::MODULE_XML_PATH)) {
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_NOT_FOUND'),
                 'warning'
             );
-            return;
+            return false;
         }
 
         $content = file_get_contents(self::MODULE_XML_PATH);
 
-        if (strpos($content, 'type="modulelayout"') !== false) {
-            return;
-        }
+        // Strip DTDs to prevent XXE / billion-laughs attacks
+        $content = preg_replace('#<!DOCTYPE[^>]*>#', '', $content);
+        $content = preg_replace('#<!ENTITY[^>]*>#', '', $content);
 
         $dom = new DOMDocument();
         $dom->preserveWhiteSpace = true;
@@ -174,12 +186,16 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
                 'warning'
             );
-            return;
+            return false;
         }
 
         $xpath = new DOMXPath($dom);
 
-        /** @var DOMElement $fieldset */
+        // Idempotency check via DOM — skip if the layout field already exists
+        if ($xpath->query('//fieldset[@name="advanced"]/field[@name="layout"]')->length > 0) {
+            return true;
+        }
+
         $fieldset = $xpath->query('//fieldset[@name="advanced"]')->item(0);
 
         if (!$fieldset) {
@@ -187,7 +203,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
                 'warning'
             );
-            return;
+            return false;
         }
 
         $field = $dom->createElement('field');
@@ -206,7 +222,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
                 'warning'
             );
-            return;
+            return false;
         }
 
         if (!is_writable(self::MODULE_XML_PATH)) {
@@ -217,7 +233,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 ),
                 'warning'
             );
-            return;
+            return false;
         }
 
         $lockHandle = $this->acquireLock();
@@ -227,7 +243,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BACKUP_FAILED'),
                 'warning'
             );
-            return;
+            return false;
         }
 
         if (!copy(self::MODULE_XML_PATH, self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
@@ -236,25 +252,47 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BACKUP_FAILED'),
                 'warning'
             );
-            return;
+            return false;
         }
 
-        $bytes = @file_put_contents(self::MODULE_XML_PATH, $newContent, LOCK_EX);
-        $this->releaseLock($lockHandle);
+        // Atomic write: write to .tmp then rename
+        $tmpPath = self::MODULE_XML_PATH . '.tmp';
+        $bytes = file_put_contents($tmpPath, $newContent, LOCK_EX);
 
         if ($bytes === false) {
-            @copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
+            @unlink($tmpPath);
+            $this->releaseLock($lockHandle);
+            if (file_exists(self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
+                copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
+            }
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_WRITE_FAILED'),
                 'warning'
             );
-            return;
+            return false;
         }
+
+        if (!rename($tmpPath, self::MODULE_XML_PATH)) {
+            @unlink($tmpPath);
+            if (file_exists(self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
+                copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
+            }
+            $this->releaseLock($lockHandle);
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_WRITE_FAILED'),
+                'warning'
+            );
+            return false;
+        }
+
+        $this->releaseLock($lockHandle);
 
         $app->enqueueMessage(
             Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_SUCCESS'),
             'success'
         );
+
+        return true;
     }
 
     /**
@@ -262,7 +300,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
      * Refuses to proceed if the backup is missing.
      * Uses file locking to prevent concurrent backup/restore race conditions.
      */
-    private function revertModuleManifestPatch($app): void
+    private function revertModuleManifestPatch($app): bool
     {
         $backupPath = self::MODULE_XML_PATH . self::BACKUP_SUFFIX;
 
@@ -274,17 +312,20 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 ),
                 'warning'
             );
-            return;
+            return false;
         }
 
         $lockHandle = $this->acquireLock();
 
         if ($lockHandle === null) {
             $app->enqueueMessage(
-                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
+                sprintf(
+                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
+                    htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
+                ),
                 'warning'
             );
-            return;
+            return false;
         }
 
         if (!is_writable(self::MODULE_XML_PATH) || !is_readable($backupPath)) {
@@ -296,11 +337,13 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 ),
                 'warning'
             );
-            return;
+            return false;
         }
 
-        $restored = @copy($backupPath, self::MODULE_XML_PATH);
-        @unlink($backupPath);
+        $restored = copy($backupPath, self::MODULE_XML_PATH);
+        if (file_exists($backupPath)) {
+            unlink($backupPath);
+        }
         $this->releaseLock($lockHandle);
 
         if ($restored) {
@@ -308,7 +351,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_MANIFEST'),
                 'notice'
             );
-            return;
+            return true;
         }
 
         $app->enqueueMessage(
@@ -318,6 +361,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             ),
             'warning'
         );
+
+        return false;
     }
 
     /**
