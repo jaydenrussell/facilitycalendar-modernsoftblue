@@ -1,0 +1,2 @@
+This marker file is installed by the one-time "Old Facility Calendar package cleanup" helper.
+It contains no data and is removed when you uninstall this helper from Joomla.
