@@ -11,7 +11,7 @@
         <downloadurl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.5.0/facilitycalendar-modernsoftblue.zip</downloadurl>
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <changelogurl>https://jaydenrussell.github.io/facilitycalendar-modernsoftblue/CHANGELOG.xml</changelogurl>
-        <sha256>9C55D0376BFB946942D8E8C075443E5249872DE3655EB182519C23067D2BF804</sha256>
+        <sha256>3ED767CAF417DD5829815BB67CF16A5D43CD7BB45EDA7EEC26197102CDC39A0E</sha256>
         <targetplatform name="joomla" version="3.[0-9]+" />
         <php_minimum>7.4.0</php_minimum>
     </update>
