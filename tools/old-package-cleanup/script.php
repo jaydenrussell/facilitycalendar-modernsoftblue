@@ -26,7 +26,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 
-class pkg_facilitycalendar_msb_old_cleanupInstallerScript
+class pkg_msb_old_cleanupInstallerScript
 {
 	public function install($parent)
 	{
