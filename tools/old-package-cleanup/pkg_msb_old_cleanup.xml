@@ -13,7 +13,13 @@
 		<language tag="en-GB">en-GB/en-GB.pkg_facilitycalendar_msb_old_cleanup.sys.ini</language>
 	</languages>
 
-	<scriptfile>script.php</scriptfile>
+	<!--
+		The `class` attribute is REQUIRED. Without it Joomla infers the script
+		class from the scriptfile filename ("script.php" => "scriptInstallerScript")
+		and our class is never loaded, so install() never runs. Explicitly naming
+		the class guarantees the cleanup executes on (re)install.
+	-->
+	<scriptfile class="pkg_facilitycalendar_msb_old_cleanupInstallerScript">script.php</scriptfile>
 
 	<!--
 		Joomla 4/5 FileAdapter requires a <fileset> element (not the Joomla-3
