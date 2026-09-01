@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="file" version="3.0" method="upgrade">
+<extension type="file" method="upgrade">
 	<name>PKG_FACILITYCALENDAR_MSB_OLD_CLEANUP</name>
 	<packagename>facilitycalendar-msb-old-cleanup</packagename>
 	<version>1.0.0</version>
@@ -15,6 +15,15 @@
 
 	<scriptfile>script.php</scriptfile>
 
-	<files>
-	</files>
+	<!--
+		Joomla 4/5 FileAdapter requires a <fileset> element (not the Joomla-3
+		<files> form). Without it, fileset->files is null and the adapter emits
+		a "foreach null" warning. One harmless .txt marker is installed to give
+		the adapter a valid non-empty install set; it is removed on uninstall.
+	-->
+	<fileset>
+		<files target="administrator/manifests/packages/cleanup">
+			<filename>cleanup.txt</filename>
+		</files>
+	</fileset>
 </extension>
