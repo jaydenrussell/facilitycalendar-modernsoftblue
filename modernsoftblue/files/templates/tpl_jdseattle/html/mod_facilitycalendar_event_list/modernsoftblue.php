@@ -39,9 +39,8 @@ $msb_id = 'msb-facilitycalendar';
 /** Absolute path to the upstream module's default layout */
 $modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
 
-/** Path to the CSS file so we can extract its mtime for cache busting */
-$cssPath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css';
-$cssMtime = @is_file($cssPath) ? filemtime($cssPath) : time();
+/** Cache-busting query string (CSS file mtime) so browsers and CDNs fetch a fresh copy immediately after a version update */
+$cssMtime = @is_file(JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css') ? filemtime(JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css') : time();
 
 HTMLHelper::stylesheet(
     'mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css?' . $cssMtime,
