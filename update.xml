@@ -6,14 +6,13 @@
         <element>pkg_facilitycalendar_upcomingeventlist_modernsoftblue</element>
         <type>package</type>
         <client>site</client>
-        <version>1.5.1</version>
+        <version>1.5.2</version>
         <author>jaydenrussell</author>
-        <downloadurl type="archive">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.5.1/facilitycalendar-modernsoftblue.zip</downloadurl>
+        <downloadurl type="archive">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.5.2/facilitycalendar-upcomingeventlist-modernsoftblue.zip</downloadurl>
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <changelogurl>https://jaydenrussell.github.io/facilitycalendar-modernsoftblue/CHANGELOG.xml</changelogurl>
-        <sha256>96DC49B54BA783F83CE04C3BA8984A7E13EBC577EEEE5D17ACBA0067749991D3</sha256>
-        <tags>signing-pubkey=PLACEHOLDER_GENERATE_GPG_KEY</tags>
-        <notes>Fallback download: https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/v1.5.1/facilitycalendar-modernsoftblue.zip</notes>
+        <sha256>09C1BC6081BA3A0F373C93900303031E26A2F040F6DBD5B155351C0E6FFF5D1B</sha256>
+        <notes>Fallback download: https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/v1.5.2/facilitycalendar-upcomingeventlist-modernsoftblue.zip</notes>
         <targetplatform name="joomla" version="3.[0-9]+" />
         <php_minimum>7.4.0</php_minimum>
     </update>

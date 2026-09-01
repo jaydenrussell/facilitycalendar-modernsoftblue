@@ -40,8 +40,10 @@ $msb_id = 'msb-facilitycalendar';
 /** Absolute path to the upstream module's default layout */
 $modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
 
-/** Cache-busting query string (package version) so browsers/CDNs fetch a fresh copy after a version update. Stable across deploys; does not depend on filesystem mtime. */
-$cssMtime = '1.5.1';
+/** Cache-busting query string based on the CSS file's mtime so browsers/CDNs fetch a fresh copy after a version update. */
+$cssPath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css';
+clearstatcache(true, $cssPath);
+$cssMtime = @filemtime($cssPath) ?: '1.5.1';
 
 HTMLHelper::stylesheet(
     'mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css?' . $cssMtime,
