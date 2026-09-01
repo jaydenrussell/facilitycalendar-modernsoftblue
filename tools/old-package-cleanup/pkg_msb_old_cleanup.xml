@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="package" method="upgrade">
+<extension type="file" version="3.10" method="upgrade">
 	<name>PKG_FACILITYCALENDAR_MSB_OLD_CLEANUP</name>
 	<packagename>facilitycalendar-msb-old-cleanup</packagename>
 	<version>1.0.0</version>
@@ -13,12 +13,22 @@
 		<language tag="en-GB">en-GB/en-GB.pkg_facilitycalendar_msb_old_cleanup.sys.ini</language>
 	</languages>
 
+	<scriptfile>script.php</scriptfile>
+
 	<!--
-		The `class` attribute is REQUIRED. Without it Joomla infers the script
-		class from the scriptfile filename ("script.php" => "scriptInstallerScript")
-		and our class is never loaded. Explicitly naming the class guarantees the
-		cleanup executes. Cleanup runs in postflight(), which fires on BOTH a
-		fresh install and an upgrade (re-install), so it works however you install.
+		Joomla 3.10 FileAdapter derives the installer-script CLASS NAME from the
+		MANIFEST FILENAME (pkg_msb_old_cleanup.xml -> pkg_msb_old_cleanupInstallerScript).
+		The class attribute is NOT honoured, so script.php MUST declare that exact
+		class name.
+
+		Joomla 3.10 also REQUIRES a non-empty <fileset><files> for a type=file
+		extension (line 546 iterates fileset->files; a Joomla-3 style <files> is
+		ignored and yields the "foreach null" warning). One harmless .txt marker is
+		installed to provide a valid install set and is removed on uninstall.
 	-->
-	<scriptfile class="pkg_facilitycalendar_msb_old_cleanupInstallerScript">script.php</scriptfile>
+	<fileset>
+		<files target="administrator/manifests/packages/cleanup">
+			<filename>cleanup.txt</filename>
+		</files>
+	</fileset>
 </extension>
