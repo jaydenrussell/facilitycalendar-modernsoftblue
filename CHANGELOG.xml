@@ -2,6 +2,7 @@
 <extensionset>
     <extension name="Facility Calendar Upcoming Event List — Modern Soft Blue" packagename="facilitycalendar-upcomingeventlist-modernsoftblue">
         <notes>
+            <note version="1.2.0" creationdate="2026-09-01">Fixed Joomla 3.10 compatibility: removed the Joomla 4-only InstallerScriptInterface (which does not exist in Joomla 3.10 and caused a fatal "interface not found" at install); the installer script is now a duck-typed Joomla 3 InstallerScript. Bumped all version surfaces (package manifest, file manifest, update.xml, changelog) to 1.2.0 and corrected the update.xml download URL to the real release asset.</note>
             <note version="1.0.1" creationdate="2026-08-31">Production hardening: fixed installer postflight method (was using non-existent postinstall), replaced regex XML patching with DOMDocument, added LOCK_EX file locking, added is_writable() checks, added preflight compatibility checks, added uninstall rollback, externalized CSS to media file, fixed update server URL, fixed hardcoded image path, added language files, added index.html files, added blockChildUninstall, added changelogurl, bumped to Joomla 3.8+ installer interface.</note>
             <note version="1.0.0" creationdate="2026-08-19">Initial release. Card-style theme for mod_facilitycalendar_event_list with light rounded date tiles, hairline dividers, semibold titles, and muted times.</note>
         </notes>

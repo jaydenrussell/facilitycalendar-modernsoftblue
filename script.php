@@ -2,8 +2,12 @@
 /**
  * Facility Calendar Upcoming Event List — Modern Soft Blue — installer script
  *
- * Implements Joomla\CMS\Installer\InstallerScriptInterface for proper install,
- * update, and uninstall lifecycle hooks (Joomla 3.8+).
+ * Provides install, update, and uninstall lifecycle hooks (Joomla 3.8+).
+ *
+ * Note: this is written for Joomla 3.x, where the installer script is duck-typed
+ * (a plain class whose method names match the installer's expectations) rather
+ * than implementing Joomla 4's InstallerScriptInterface. The class name is
+ * derived from the package element name by the installer.
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
@@ -17,10 +21,9 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Installer\InstallerAdapter;
-use Joomla\CMS\Installer\InstallerScriptInterface;
 use Joomla\CMS\Language\Text;
 
-class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript implements InstallerScriptInterface
+class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 {
     /** Minimum Joomla version required */
     private string $minimumJoomla = '3.8.0';
