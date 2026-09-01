@@ -20,7 +20,7 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 
 - **mod\_facilitycalendar\_event\_list** must already be installed on the site.
 - Joomla 3.8.0 or later
-- PHP 7.2.0 or later
+- PHP 7.4.0 or later
 
 ## Installation
 
@@ -67,7 +67,7 @@ Uninstalling this package will automatically revert the module manifest patch, r
 
 The post-flight script (`script.php`) runs after install and update:
 
-1. Validates minimum Joomla (3.8.0) and PHP (7.2.0) versions
+1. Validates minimum Joomla (3.8.0) and PHP (7.4.0) versions
 2. Locates `modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml`
 3. Checks if the `layout` field (type `modulelayout`) already exists — if so, skips
 4. If not, injects the field into the `<fieldset name="advanced">` block using DOMDocument

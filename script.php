@@ -29,7 +29,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     private string $minimumJoomla = '3.8.0';
 
     /** Minimum PHP version required */
-    private string $minimumPhp = '7.2.0';
+    private string $minimumPhp = '7.4.0';
 
     /** Name of the upstream module this package patches */
     private const MODULE_NAME     = 'mod_facilitycalendar_event_list';

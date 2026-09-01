@@ -2,7 +2,7 @@
 <extension type="file" version="3.0" method="upgrade">
     <name>MOD_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE</name>
     <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
     <creationDate>August 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
@@ -22,6 +22,16 @@
     <update>
         <file>modernsoftblue.css</file>
     </update>
+
+    <fileset>
+        <files target="templates/tpl_jdseattle/html/mod_facilitycalendar_event_list" folder="files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list">
+            <filename>modernsoftblue.php</filename>
+            <filename>index.html</filename>
+        </files>
+        <files target="images" folder="files/images">
+            <filename>scc-calendar-badge.png</filename>
+        </files>
+    </fileset>
 
     <media destination="mod_facilitycalendar_upcomingeventlist_modernsoftblue" folder="media">
         <filename>modernsoftblue.css</filename>
