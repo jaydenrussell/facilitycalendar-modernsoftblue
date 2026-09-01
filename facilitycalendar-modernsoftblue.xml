@@ -2,8 +2,8 @@
 <extension type="package" version="3.0" method="upgrade">
     <name>PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE</name>
     <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
-    <version>1.4.0</version>
-    <creationDate>August 2026</creationDate>
+    <version>1.4.1</version>
+    <creationDate>September 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
     <authorUrl>https://simcoecurlingclub.ca</authorUrl>
@@ -13,7 +13,7 @@
 
     <blockChildUninstall>true</blockChildUninstall>
 
-    <languages folder="language">
+    <languages folder="modernsoftblue/files/language">
         <language tag="en-GB">en-GB/en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini</language>
         <language tag="en-GB">en-GB/en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini</language>
     </languages>
@@ -22,7 +22,6 @@
 
     <files>
         <filename>modernsoftblue</filename>
-        <filename>CHANGELOG.xml</filename>
     </files>
 
     <updateservers>

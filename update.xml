@@ -5,7 +5,7 @@
         <description>Modern Soft Blue card-style theme for the Facility Calendar Upcoming Event List module (mod_facilitycalendar_event_list).</description>
         <element>pkg_facilitycalendar_upcomingeventlist_modernsoftblue</element>
         <type>package</type>
-        <version>1.4.0</version>
+        <version>1.4.1</version>
         <tags>
             <tag>theme</tag>
             <tag>layout</tag>
@@ -13,12 +13,12 @@
         </tags>
         <downloads>
             <downloadurl type="full" format="zip">
-                https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.4.0/facilitycalendar-modernsoftblue.zip
+                https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.4.1/facilitycalendar-modernsoftblue.zip
             </downloadurl>
         </downloads>
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <changelogurl>https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/master/CHANGELOG.xml</changelogurl>
-        <sha256>DD181467959B9CF7C2B06D228485CCC7978E5E68D878BD9917A9484184B9D2B1</sha256>
+        <sha256>42182C7C3EAED0ED82BC7F0FB5CB7047A15B22E6877E0AA4E3F7C02FED40B195</sha256>
         <targetplatform name="joomla" version="3\." />
     </update>
 </updates>
