@@ -1,27 +1,26 @@
 <?php
 /**
- * Facility Calendar — remove orphaned OLD package (pkg_facilitycalendar_modernsoftblue)
+ * Facility Calendar — remove orphaned OLD package(s) (pkg_facilitycalendar-modernsoftblue)
  * ------------------------------------------------------------------------------------
- * One-time cleanup helper. On INSTALL it deletes the stale, orphaned
- * `pkg_facilitycalendar_modernsoftblue` row from the Joomla `#__extensions`
- * table (and any leftover `#__schemas` row), so the Extension Manager stops
- * showing the old, un-removable package.
+ * One-time cleanup helper. On INSTALL it deletes the stale, orphaned OLD
+ * package row(s) from the Joomla `#__extensions` table (and any leftover
+ * `#__schemas` rows), so the Extension Manager stops showing the old,
+ * un-removable package.
  *
  * It uses the site's existing database connection (configuration.php), so NO
  * database login is required. It does NOT touch the newer package
- * (`pkg_facilitycalendar_upcomingeventlist_modernsoftblue`) or any files.
+ * (`pkg_facilitycalendar-upcomingeventlist-modernsoftblue`) or any files.
  *
- * IMPORTANT: delete this helper's zip + any copied file once you're done.
+ * The stored `element` is derived by Joomla from the OLD `<packagename>`
+ * (`facilitycalendar-modernsoftblue`), so it is matched here by a LIKE pattern
+ * rather than an exact string — this is safe because the NEW package's element
+ * is explicitly excluded.
+ *
+ * IMPORTANT: delete this helper's zip + any copied files once you're done.
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-
-/**
- * The element of the OLD package to remove.
- * (The new, renamed package has a different element and is NOT touched.)
- */
-define('MSB_CLEANUP_OLD_ELEMENT', 'pkg_facilitycalendar_modernsoftblue');
 
 class pkg_facilitycalendar_msb_old_cleanupInstallerScript
 {
@@ -31,66 +30,68 @@ class pkg_facilitycalendar_msb_old_cleanupInstallerScript
 	public function install($parent)
 	{
 		$db = Factory::getDbo();
+		$removed = array();
 
-		// 1) Remove the orphaned package from #__extensions
-		$removed = 0;
-
+		// Find every Package row belonging to the OLD package.
+		// The new package's element is 'pkg_facilitycalendar-upcomingeventlist-modernsoftblue'
+		// and is excluded so it is never touched.
 		$query = $db->getQuery(true)
-			->delete($db->quoteName('#__extensions'))
-			->where($db->quoteName('element') . ' = ' . $db->quote(MSB_CLEANUP_OLD_ELEMENT))
-			->where($db->quoteName('type') . ' = ' . $db->quote('package'));
+			->select($db->quoteName(array('extension_id', 'element', 'name')))
+			->from($db->quoteName('#__extensions'))
+			->where($db->quoteName('type') . ' = ' . $db->quote('package'))
+			->where($db->quoteName('element') . ' LIKE ' . $db->quote('%facilitycalendar-modernsoftblue%'))
+			->where($db->quoteName('element') . ' NOT LIKE ' . $db->quote('%upcomingeventlist%'));
 		$db->setQuery($query);
-		$db->execute();
-		$removed += $db->getAffectedRows();
+		$rows = $db->loadObjectList();
 
-		// 2) Remove any matching schema row (package installs leave one)
-		$query2 = $db->getQuery(true)
-			->delete($db->quoteName('#__schemas'))
-			->where($db->quoteName('extension_id') . ' = ' . (int) $this->getPackageExtensionId($db));
-		$db->setQuery($query2);
-		$db->execute();
+		foreach ($rows as $row)
+		{
+			// Remove the matching schema row first, then the extension row.
+			$queryS = $db->getQuery(true)
+				->delete($db->quoteName('#__schemas'))
+				->where($db->quoteName('extension_id') . ' = ' . (int) $row->extension_id);
+			$db->setQuery($queryS);
+			$db->execute();
 
-		// 3) Report to the user
-		$msg = ($removed > 0)
-			? ($removed . ' row(s) removed for the old package "' . MSB_CLEANUP_OLD_ELEMENT . '".')
-			: 'The old package "' . MSB_CLEANUP_OLD_ELEMENT . '" was not found (already removed).';
+			$queryD = $db->getQuery(true)
+				->delete($db->quoteName('#__extensions'))
+				->where($db->quoteName('extension_id') . ' = ' . (int) $row->extension_id);
+			$db->setQuery($queryD);
+			$db->execute();
+
+			if ($db->getAffectedRows() > 0)
+			{
+				$removed[] = $row->element . ' (id ' . (int) $row->extension_id . ')';
+			}
+		}
 
 		$app = Factory::getApplication();
-		$app->enqueueMessage($msg, 'message');
 
-		$this->showCleanupNotice($app);
+		if (!empty($removed))
+		{
+			$app->enqueueMessage(
+				'Removed old package row(s): ' . implode(', ', $removed) . '.',
+				'message'
+			);
+		}
+		else
+		{
+			$app->enqueueMessage(
+				'No old package row was found (it may already be removed, or its '
+				. 'element differs from the expected pattern). Refresh the Extension '
+				. 'Manager — if it is still listed, reply with the exact row text.',
+				'warning'
+			);
+		}
 
-		return true;
-	}
-
-	/**
-	 * Look up the old package's extension_id so we can clean #__schemas.
-	 */
-	private function getPackageExtensionId($db)
-	{
-		$query = $db->getQuery(true)
-			->select($db->quoteName('extension_id'))
-			->from($db->quoteName('#__extensions'))
-			->where($db->quoteName('element') . ' = ' . $db->quote(MSB_CLEANUP_OLD_ELEMENT))
-			->where($db->quoteName('type') . ' = ' . $db->quote('package'));
-		$db->setQuery($query);
-
-		return (int) $db->loadResult();
-	}
-
-	/**
-	 * Remind the user what to do next and to remove this helper afterwards.
-	 */
-	private function showCleanupNotice($app)
-	{
 		$app->enqueueMessage(
-			'Cleanup complete. Refresh the Extension Manager — the old '
-			. '"Facility Calendar — Modern Soft Blue" package should be gone. '
-			. 'You may now uninstall this helper (select it in Manage and press Uninstall), '
-			. 'or install/update the new "Facility Calendar Upcoming Event List — Modern Soft Blue" package. '
-			. 'Please delete the helper zip from your computer as it is a one-time tool.'
-			,
+			'Cleanup complete. Refresh the Extension Manager — the old package should '
+			. 'be gone. You may now uninstall this helper (Manage → select it → Uninstall) '
+			. 'or install/update the new "Facility Calendar Upcoming Event List — Modern '
+			. 'Soft Blue" package. Please delete the helper zip from your computer after use.',
 			'notice'
 		);
+
+		return true;
 	}
 }
