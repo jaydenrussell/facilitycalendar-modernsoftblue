@@ -103,6 +103,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
+        @mkdir(JPATH_ROOT . '/modernsoftblue/', 0755, true);
+
         if (version_compare(PHP_VERSION, $this->minimumPhp, '<')) {
             $app->enqueueMessage(
                 sprintf(
