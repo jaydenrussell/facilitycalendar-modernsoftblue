@@ -7,7 +7,7 @@
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
  *   postflight — patch module manifest to add layout override support, register language strings
- *   uninstall  — remove deployed files, restore module manifest backup
+ *   uninstall  — remove deployed files, remove stray package manifests, restore module manifest backup
  *
  * @copyright   Copyright (C) 2026 Simcoe Curling Club
  * @license     GNU General Public License version 2 or later
@@ -58,6 +58,14 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
 
         $this->removeRecursive(JPATH_ROOT . '/modernsoftblue/');
+
+        // Remove any stray package manifests from older releases that used a
+        // non-canonical package manifest filename.
+        $manifestDir = JPATH_ADMINISTRATOR . '/manifests/packages/';
+        foreach (['facilitycalendar-modernsoftblue.xml', 'pkg_facilitycalendar-upcomingeventlist-modernsoftblue.xml'] as $stray) {
+            $p = $manifestDir . $stray;
+            if (file_exists($p)) { @unlink($p); }
+        }
 
         $backupPath = self::MODULE_XML_PATH . self::BACKUP_SUFFIX;
         if (file_exists($backupPath)) {
