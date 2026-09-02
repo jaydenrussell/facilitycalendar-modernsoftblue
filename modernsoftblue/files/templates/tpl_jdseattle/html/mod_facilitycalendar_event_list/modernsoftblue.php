@@ -80,23 +80,50 @@ if ($modTmplReal === false || strpos($modTmplReal, JPATH_BASE . '/modules/mod_fa
       require $modTmplReal;
       $html = ob_get_clean();
 
-      $html = preg_replace_callback(
-        '~(<div class="facility-event-time">)\s*(.*?)\s*(</div>)~s',
-        function ($m) {
-          $t = trim($m[2]);
+      // Limit buffer size to prevent memory exhaustion on cheap shared hosting.
+      // Skip normalization if upstream output exceeds 512KB; output raw HTML instead.
+      $maxBufferSize = 512 * 1024;
+      if (strlen($html) <= $maxBufferSize) {
+          $dom = new DOMDocument();
+          $dom->preserveWhiteSpace = true;
+          $dom->formatOutput = false;
+          $dom->loadHTML($html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
 
-          if (preg_match('~^12:00\s*AM$~i', $t)) {
-            $t = 'All Day';
-          } else {
-            $t = preg_replace('~^0(?=\d)~', '', $t);
+          $xpath = new DOMXPath($dom);
+          $timeNodes = $xpath->query('//*[contains(@class, "facility-event-time")]');
+
+          foreach ($timeNodes as $node) {
+              $t = trim($node->textContent);
+
+              if (preg_match('~^12:00\s*AM$~i', $t)) {
+                  $t = 'All Day';
+              } else {
+                  $t = preg_replace('~^0(?=\d)~', '', $t);
+              }
+
+              $node->textContent = $t;
           }
 
-          return $m[1] . $t . $m[3];
-        },
-        $html
-      );
+          // Serialize body children only to avoid doctype/html/body wrappers
+          $body = $dom->getElementsByTagName('body')->item(0);
+          $out = '';
+          if ($body) {
+              foreach ($body->childNodes as $child) {
+                  $out .= $dom->saveHTML($child);
+              }
+          }
 
-      echo $html;
+          if ($out !== '') {
+              echo $out;
+          } else {
+              echo $html;
+          }
+      } else {
+          if (Factory::getApplication()->get('debug')) {
+              echo '<p><strong>[msb]</strong> Upstream output exceeds 512KB limit; skipping time normalization to preserve memory.</p>';
+          }
+          echo $html;
+      }
       ?>
     </div>
   </section>
