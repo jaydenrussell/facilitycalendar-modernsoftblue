@@ -132,38 +132,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        $manifestPath = null;
-        if (is_object($adapter) && method_exists($adapter, 'getPath')) {
-            $manifestPath = $adapter->getPath('manifest');
-        }
-        if (!$manifestPath || !file_exists($manifestPath)) {
-            $fallback = dirname(__FILE__) . '/facilitycalendar-modernsoftblue.xml';
-            if (file_exists($fallback)) {
-                $manifestPath = $fallback;
-            }
-        }
-        if (!$manifestPath) {
-            $app->enqueueMessage(
-                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
-                'warning'
-            );
-            return false;
-        }
-
-        $srcDir = dirname($manifestPath);
-
-        $srcTpl  = $srcDir . '/modernsoftblue/files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
-        $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
-        $this->deployFolder($srcTpl, $destTpl);
-
-        $srcMedia  = $srcDir . '/modernsoftblue/files/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
-        $destMedia = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
-        $this->deployFolder($srcMedia, $destMedia);
-
-        $srcLang  = $srcDir . '/modernsoftblue/files/language/en-GB/';
-        $destLang = JPATH_ROOT . '/language/en-GB/';
-        $this->deployFolder($srcLang, $destLang);
-
         $this->loadLanguageFiles();
 
         if (!$this->patchModuleManifest($app)) {
