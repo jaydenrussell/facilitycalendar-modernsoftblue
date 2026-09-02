@@ -334,7 +334,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
     /**
      * Revert the module manifest to the backup taken at install time.
-     * Refuses to proceed if the backup is missing.
+     * This is a best-effort cleanup during uninstall and must never block
+     * package removal, so it always returns true and reports warnings instead.
      * Uses file locking to prevent concurrent backup/restore race conditions.
      */
     private function revertModuleManifestPatch($app): bool
@@ -343,74 +344,58 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         if (!file_exists($backupPath)) {
             $app->enqueueMessage(
-                sprintf(
-                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
-                    'No backup file found at <code>' . htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8') . '</code>; cannot revert a patch that was never applied.'
-                ),
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
                 'warning'
             );
-            return false;
+            return true;
         }
 
         $lockHandle = $this->acquireLock();
 
         if ($lockHandle === null) {
             $app->enqueueMessage(
-                sprintf(
-                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
-                    htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
-                ),
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
                 'warning'
             );
-            return false;
+            return true;
         }
 
         if (!is_writable(self::MODULE_XML_PATH) || !is_readable($backupPath)) {
             $this->releaseLock($lockHandle);
             $app->enqueueMessage(
-                sprintf(
-                    Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
-                    htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
-                ),
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
                 'warning'
             );
-            return false;
+            return true;
         }
 
         $restored = copy($backupPath, self::MODULE_XML_PATH);
 
-        // Verify the restored manifest is well-formed XML and destination size matches source
         if ($restored && file_exists(self::MODULE_XML_PATH) && filesize(self::MODULE_XML_PATH) === filesize($backupPath)) {
             $verifyDom = new DOMDocument();
             $verifyDom->preserveWhiteSpace = true;
             $verifyDom->formatOutput       = false;
             $restored = $verifyDom->loadXML(file_get_contents(self::MODULE_XML_PATH), LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
-        } else {
-            $restored = false;
         }
 
         $this->releaseLock($lockHandle);
 
         if ($restored) {
             if (file_exists($backupPath)) {
-                unlink($backupPath);
+                @unlink($backupPath);
             }
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_MANIFEST'),
                 'notice'
             );
-            return true;
+        } else {
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
+                'warning'
+            );
         }
 
-        $app->enqueueMessage(
-            sprintf(
-                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
-                htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
-            ),
-            'warning'
-        );
-
-        return false;
+        return true;
     }
 
     /**
