@@ -33,7 +33,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 
 /** Scoped wrapper ID — deterministic, no randomness needed */
-$msb_id = 'msb-facilitycalendar';
+$msb_facilitycalendar_wrapper_id = 'msb-facilitycalendar';
 
 /** Absolute path to the upstream module's default layout */
 $modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
@@ -69,7 +69,7 @@ if ($modTmplReal === false || strpos($modTmplReal, JPATH_BASE . '/modules/mod_fa
   <?php return; ?>
 <?php endif; ?>
 
-<div id="<?php echo $msb_id; ?>">
+<div id="<?php echo $msb_facilitycalendar_wrapper_id; ?>">
   <section class="msb-card msb-card--events">
     <?php if (trim($module->title) !== '') : ?>
       <h3 class="msb-card-title"><?php echo htmlspecialchars($module->title, ENT_QUOTES, 'UTF-8'); ?></h3>
