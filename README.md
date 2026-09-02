@@ -27,26 +27,26 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 
 ```bash
 cd facilitycalendar-modernsoftblue
-zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip .
+zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.10.zip .
 ```
 
 Verify the zip checksum matches the release asset before installing:
 
 ```bash
-sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip
+sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.10.zip
 ```
 
-Expected: `58cd59970c35dd81abd9ffd7d067570626d9a5e25e12f4b311ab79d5126b0462`
+Expected: `14b2eb75aaa4a1b090e71eb2f9059f33184e800b2d9e96de1eeade0e6980071a`
 
-Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
+Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.10.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
 
 ### 2. Install in Joomla
 
-**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip`.
+**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.10.zip`.
 
 The package automatically:
 - Installs the `modernsoftblue.php` layout to `templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/`
-- Installs the `modernsoftblue.css` stylesheet to the Joomla media folder
+- Installs the `modernsoftblue.css` stylesheet and clock icon to the Joomla media folder
 - Patches the module's XML manifest to add the **Module Layout** dropdown (idempotent — safe to re-install)
 
 Post-install messages will confirm what was done.
@@ -67,13 +67,18 @@ In the module's **Advanced** tab, set **Module Layout** back to **Default**. Ori
 
 ## Uninstalling
 
-Uninstalling this package will automatically revert the module manifest patch, restoring the original manifest without the layout field. You can then safely uninstall `mod_facilitycalendar_event_list` if desired.
+Uninstalling this package automatically:
+- Reverts the module manifest patch (restores original manifest without layout field)
+- Removes the deployed template override, CSS, and clock icon
+- Removes the package language files
+
+You can then safely uninstall `mod_facilitycalendar_event_list` if desired.
 
 **Note:** Re-installing this package overwrites the deployed `modernsoftblue.css` and `clock.svg` in the Joomla media folder. Do not edit those files in place; customize via child CSS or a separate stylesheet.
 
 ## Performance notes
 
-- The layout override buffers the upstream module output to normalize event times. An adaptive buffer limit is computed from the host's `memory_limit` (40% of available memory, clamped to 256KB–2MB). If the upstream HTML exceeds that limit, the layout falls back to raw HTML without time normalization. This only affects sites with very large event lists or plugin-injected output.
+- The layout override buffers the upstream module output to normalize event times. An adaptive buffer limit is computed from the host's `memory_limit` (40% of available memory, clamped to 256KB–2MB). If the upstream HTML exceeds that limit, the layout falls back to raw HTML without time normalization.
 - If you regularly exceed the buffer cap, increase `memory_limit` in `php.ini` rather than disabling the limit.
 - Sites running PHP 7.4–8.1 are supported. Joomla's updater does not enforce `php_minimum` during update checks, so sites on PHP < 7.4 must not apply the update manually.
 
@@ -82,39 +87,37 @@ Uninstalling this package will automatically revert the module manifest patch, r
 The post-flight script (`script.php`) runs after install and update:
 
 1. Validates minimum Joomla (3.8.0) and PHP (7.4.0) versions
-2. Locates `modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml`
-3. Checks if the `layout` field (type `modulelayout`) already exists — if so, skips
-4. If not, injects the field into the `<fieldset name="advanced">` block using DOMDocument
-5. Backs up the original manifest before writing
-6. Reports success or warns if the module wasn't found
-
-If the upstream module is updated and its manifest is overwritten, simply re-install this package — the script will re-apply the patch.
+2. Deploys template overrides and media files from the package to Joomla's directories
+3. Loads the package language files
+4. Locates `modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml`
+5. Checks if the `layout` field (type `modulelayout`) already exists — if so, skips
+6. Injects the field into the `<fieldset name="advanced">` block using DOMDocument
+7. Backs up the original manifest before writing
+8. Reports success or warns if the module wasn't found
 
 ## File Structure
 
 ```
 facilitycalendar-modernsoftblue/
-├── facilitycalendar-modernsoftblue.xml   # Package manifest
-├── script.php                            # Installer script (preflight, postflight, uninstall)
+├── facilitycalendar-modernsoftblue.xml   # Package manifest (flat — no child file extension)
+├── script.php                            # Installer script (deploys files, patches manifest)
 ├── update.xml                            # Joomla update server XML
 ├── CHANGELOG.xml                         # Joomla update changelog
-└── modernsoftblue/
-    ├── modernsoftblue.xml                # File extension manifest
-    └── files/
-        ├── language/
-        │   └── en-GB/
-        │       ├── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini
-        │       └── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
-        ├── media/
-        │   └── mod_facilitycalendar_upcomingeventlist_modernsoftblue/
-        │       ├── modernsoftblue.css
-        │       └── clock.svg
-        └── templates/
-            └── tpl_jdseattle/
-                └── html/
-                    └── mod_facilitycalendar_event_list/
-                        ├── modernsoftblue.php
-                        └── index.html
+└── files/
+    ├── language/
+    │   └── en-GB/
+    │       ├── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini
+    │       └── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
+    ├── media/
+    │   └── mod_facilitycalendar_upcomingeventlist_modernsoftblue/
+    │       ├── modernsoftblue.css
+    │       └── clock.svg
+    └── templates/
+        └── tpl_jdseattle/
+            └── html/
+                └── mod_facilitycalendar_event_list/
+                    ├── modernsoftblue.php
+                    └── index.html
 ```
 
 ## License
