@@ -6,8 +6,10 @@
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
- *   postflight — patch module manifest to add layout override support, register language strings
- *   uninstall  — remove deployed files, remove stray package manifests, restore module manifest backup
+ *   postflight — register language strings, patch the module manifest to add
+ *                layout override support, remove the orphaned legacy child
+ *   uninstall  — remove deployed files, remove stray package manifests,
+ *                restore the module manifest backup
  *
  * @copyright   Copyright (C) 2026 Simcoe Curling Club
  * @license     GNU General Public License version 2 or later
@@ -59,8 +61,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         $this->removeRecursive(JPATH_ROOT . '/modernsoftblue/');
 
-        // Remove any stray package manifests from older releases that used a
-        // non-canonical package manifest filename.
+        // Remove any stray package manifests left in the manifests/packages folder
+        // from older releases that used a non-canonical manifest filename.
         $manifestDir = JPATH_ADMINISTRATOR . '/manifests/packages/';
         foreach (['facilitycalendar-modernsoftblue.xml', 'pkg_facilitycalendar-upcomingeventlist-modernsoftblue.xml'] as $stray) {
             $p = $manifestDir . $stray;
@@ -143,6 +145,10 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         $this->loadLanguageFiles();
 
+        // Remove the orphaned legacy child file extension from older releases
+        // whose element was simply "modernsoftblue".
+        $this->removeLegacyChild();
+
         if (!$this->patchModuleManifest($app)) {
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
@@ -180,6 +186,48 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
 
         @rmdir($dir);
+    }
+
+    /**
+     * Remove the legacy child file-extension record and manifest that older
+     * releases registered with the ambiguous element "modernsoftblue".
+     */
+    private function removeLegacyChild(): void
+    {
+        try {
+            $db = Factory::getDbo();
+            $query = $db->getQuery(true)
+                ->select(array($db->quoteName('extension_id'), $db->quoteName('name'), $db->quoteName('folder')))
+                ->from($db->quoteName('#__extensions'))
+                ->where($db->quoteName('type') . ' = ' . $db->quote('file'))
+                ->where($db->quoteName('element') . ' = ' . $db->quote('modernsoftblue'));
+
+            $db->setQuery($query);
+            $rows = $db->loadObjectList();
+        } catch (\Exception $e) {
+            return;
+        }
+
+        foreach ($rows as $row) {
+            if (isset($row->folder) && $row->folder !== '') {
+                $manifest = JPATH_ADMINISTRATOR . '/manifests/files/' . basename($row->folder);
+                if (file_exists($manifest)) {
+                    @unlink($manifest);
+                }
+            }
+
+            $legacyManifest = JPATH_ADMINISTRATOR . '/manifests/files/modernsoftblue.xml';
+            if (file_exists($legacyManifest)) {
+                @unlink($legacyManifest);
+            }
+
+            try {
+                $db->setQuery('DELETE FROM ' . $db->quoteName('#__extensions') . ' WHERE ' . $db->quoteName('extension_id') . ' = ' . (int) $row->extension_id);
+                $db->execute();
+            } catch (\Exception $e) {
+                // ignore, proceeds even if the row cannot be removed
+            }
+        }
     }
 
     private function loadLanguageFiles(): void
