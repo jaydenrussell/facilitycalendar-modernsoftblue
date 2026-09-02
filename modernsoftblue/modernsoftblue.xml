@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="file" version="3.0" method="upgrade">
     <name>Facility Calendar Upcoming Event List - Modern Soft Blue (Files)</name>
-    <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
-    <version>1.5.8</version>
+    <packagename>facilitycalendar-upcomingeventlist-modernsoftblue-files</packagename>
+    <version>1.5.9</version>
     <creationDate>September 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>

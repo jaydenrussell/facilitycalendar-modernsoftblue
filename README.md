@@ -27,22 +27,22 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 
 ```bash
 cd facilitycalendar-modernsoftblue
-zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip .
+zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip .
 ```
 
 Verify the zip checksum matches the release asset before installing:
 
 ```bash
-sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip
+sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip
 ```
 
 Expected: `58cd59970c35dd81abd9ffd7d067570626d9a5e25e12f4b311ab79d5126b0462`
 
-Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
+Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
 
 ### 2. Install in Joomla
 
-**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip`.
+**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.9.zip`.
 
 The package automatically:
 - Installs the `modernsoftblue.php` layout to `templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/`
