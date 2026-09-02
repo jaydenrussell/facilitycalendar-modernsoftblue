@@ -2,7 +2,7 @@
 <extension type="file" version="3.0" method="upgrade">
     <name>Facility Calendar Upcoming Event List - Modern Soft Blue (Files)</name>
     <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
     <creationDate>September 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
@@ -20,6 +20,7 @@
             <filename>modernsoftblue.css</filename>
             <filename>index.html</filename>
             <filename>scc-calendar-badge.png</filename>
+            <filename>clock.svg</filename>
         </files>
     </fileset>
 </extension>
