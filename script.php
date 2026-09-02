@@ -116,7 +116,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
      */
     private function acquireLock(): ?resource
     {
-        $lockPath = JPATH_ROOT . '/tmp/mod_facilitycalendar_event_list.msb-lock';
+        $lockPath = Factory::getApplication()->get('tmp_path') . '/mod_facilitycalendar_event_list.msb-lock';
         $handle = fopen($lockPath, 'w');
 
         if (!is_resource($handle)) {
@@ -146,7 +146,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         flock($handle, LOCK_UN);
         fclose($handle);
-        $lockPath = JPATH_ROOT . '/tmp/mod_facilitycalendar_event_list.msb-lock';
+        $lockPath = Factory::getApplication()->get('tmp_path') . '/mod_facilitycalendar_event_list.msb-lock';
         if (file_exists($lockPath)) {
             unlink($lockPath);
         }
@@ -218,7 +218,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         $newContent = $dom->saveXML($dom->documentElement);
 
-        if (!is_string($newContent) || strlen($newContent) === 0) {
+        if (!is_string($newContent) || $newContent === '') {
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
                 'warning'
@@ -370,12 +370,12 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             $restored = $verifyDom->loadXML(file_get_contents(self::MODULE_XML_PATH), LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
         }
 
-        if (file_exists($backupPath)) {
-            unlink($backupPath);
-        }
         $this->releaseLock($lockHandle);
 
         if ($restored) {
+            if (file_exists($backupPath)) {
+                unlink($backupPath);
+            }
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_MANIFEST'),
                 'notice'
@@ -386,7 +386,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         $app->enqueueMessage(
             sprintf(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_RESTORE_FAILED'),
-                htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8')
+                htmlspecialchars($backupPath, ENT_QUOTES, 'UTF-8') . ' — backup preserved for manual recovery.'
             ),
             'warning'
         );
