@@ -2,7 +2,7 @@
 <extension type="file" version="3.0" method="upgrade">
     <name>Modern Soft Blue</name>
     <packagename>modernsoftblue</packagename>
-    <version>1.5.15</version>
+    <version>1.5.16</version>
     <creationDate>September 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
