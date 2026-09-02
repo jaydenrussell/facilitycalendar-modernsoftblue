@@ -4,14 +4,14 @@
  *
  * Provides install, update, and uninstall lifecycle hooks (Joomla 3.8+).
  *
- * This package uses a placeholder child file extension (modernsoftblue.xml)
- * to satisfy Joomla 3's PackageAdapter, which requires at least one child
- * extension. All actual file deployment is handled by this script.
+ * This package uses a child file extension (modernsoftblue.xml) that deploys
+ * template overrides, media assets, and language files via Joomla's native
+ * file adapter. The script's postflight hook performs the module manifest patch.
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
- *   postflight — deploy files from package, patch module manifest
- *   uninstall  — remove deployed files, restore module manifest
+ *   postflight — patch module manifest to support layout overrides
+ *   uninstall  — remove deployed files, restore module manifest backup
  *
  * @copyright   Copyright (C) 2026 Simcoe Curling Club
  * @license     GNU General Public License version 2 or later
@@ -132,7 +132,25 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        $srcDir = dirname($parent->getPath('manifest'));
+        $manifestPath = null;
+        if (is_object($adapter) && method_exists($adapter, 'getPath')) {
+            $manifestPath = $adapter->getPath('manifest');
+        }
+        if (!$manifestPath || !file_exists($manifestPath)) {
+            $fallback = dirname(__FILE__) . '/facilitycalendar-modernsoftblue.xml';
+            if (file_exists($fallback)) {
+                $manifestPath = $fallback;
+            }
+        }
+        if (!$manifestPath) {
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
+                'warning'
+            );
+            return false;
+        }
+
+        $srcDir = dirname($manifestPath);
 
         $srcTpl  = $srcDir . '/modernsoftblue/files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
