@@ -63,6 +63,11 @@ In the module's **Advanced** tab, set **Module Layout** back to **Default**. Ori
 
 Uninstalling this package will automatically revert the module manifest patch, restoring the original manifest without the layout field. You can then safely uninstall `mod_facilitycalendar_event_list` if desired.
 
+## Performance notes
+
+- The layout override buffers the upstream module output to normalize event times. A 512KB output limit is enforced to protect cheap shared-hosting `memory_limit`; if the upstream HTML exceeds that limit, the layout falls back to raw HTML without time normalization. This only affects sites with very large event lists or plugin-injected output.
+- If you regularly exceed the 512KB cap, increase `memory_limit` in `php.ini` rather than disabling the limit.
+
 ## What the installer does
 
 The post-flight script (`script.php`) runs after install and update:
