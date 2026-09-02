@@ -44,7 +44,7 @@ if (file_exists($cssPath)) {
     clearstatcache(true, $cssPath);
     $cssMtime = filemtime($cssPath);
 } else {
-    $cssMtime = '1.5.3';
+    $cssMtime = '1.5.4';
 }
 
 HTMLHelper::stylesheet(
