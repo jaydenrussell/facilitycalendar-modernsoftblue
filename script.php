@@ -2,15 +2,12 @@
 /**
  * Facility Calendar Upcoming Event List — Modern Soft Blue — installer script
  *
- * Provides install, update, and uninstall lifecycle hooks (Joomla 3.8+).
- *
- * This package uses a child file extension (modernsoftblue.xml) that deploys
- * template overrides, media assets, and language files via Joomla's native
- * file adapter. The script's postflight hook performs the module manifest patch.
+ * Flat package installer (Joomla 3.8+). No child extensions.
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
- *   postflight — patch module manifest to support layout overrides
+ *   postflight — copy files from package staging folder to final locations,
+ *                patch module manifest to add layout override support
  *   uninstall  — remove deployed files, restore module manifest backup
  *
  * @copyright   Copyright (C) 2026 Simcoe Curling Club
@@ -29,7 +26,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     private const MODULE_NAME     = 'mod_facilitycalendar_event_list';
     private const MODULE_XML_PATH = JPATH_BASE . '/modules/' . self::MODULE_NAME . '/' . self::MODULE_NAME . '.xml';
     private const BACKUP_SUFFIX   = '.msb-backup';
-    private const LOCK_SUFFIX     = '.msb-lock';
 
     public function install($adapter): bool { return true; }
     public function update($adapter): bool   { return true; }
@@ -103,8 +99,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        @mkdir(JPATH_ROOT . '/modernsoftblue/', 0755, true);
-
         if (version_compare(PHP_VERSION, $this->minimumPhp, '<')) {
             $app->enqueueMessage(
                 sprintf(
@@ -136,7 +130,25 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        $srcRoot = JPATH_ROOT . '/modernsoftblue/';
+        $manifestPath = null;
+        if (is_object($adapter) && method_exists($adapter, 'getPath')) {
+            $manifestPath = $adapter->getPath('manifest');
+        }
+        if (!$manifestPath || !file_exists($manifestPath)) {
+            $fallback = dirname(__FILE__) . '/facilitycalendar-modernsoftblue.xml';
+            if (file_exists($fallback)) {
+                $manifestPath = $fallback;
+            }
+        }
+        if (!$manifestPath) {
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
+                'warning'
+            );
+            return false;
+        }
+
+        $srcRoot = dirname($manifestPath) . '/modernsoftblue/';
 
         $srcTpl  = $srcRoot . 'templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
