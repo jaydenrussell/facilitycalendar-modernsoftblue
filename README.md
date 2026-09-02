@@ -37,7 +37,7 @@ Verify the zip checksum matches the release asset before installing:
 sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.6.zip
 ```
 
-Expected: `E49F4C76057A44CD4015AA74B1D6E36CDBD00CF9A81C8271DC8AEACCA7A7ECAE`
+Expected: `REPLACE_WITH_ACTUAL_SHA256_AFTER_BUILDING_ZIP`
 
 Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.6.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
 
