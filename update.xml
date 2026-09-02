@@ -11,7 +11,7 @@
         <downloadurl type="archive">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/download/v1.5.2/facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.2.zip</downloadurl>
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <changelogurl>https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/master/CHANGELOG.xml</changelogurl>
-        <sha256>09C1BC6081BA3A0F373C93900303031E26A2F040F6DBD5B155351C0E6FFF5D1B</sha256>
+        <sha256>9CFFB235973D076BE12E7CA5C24D269974B0E2FF7726F10A913C8F886FD433FD</sha256>
         <notes>Fallback download: https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/v1.5.2/facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.2.zip</notes>
         <targetplatform name="joomla" version="3.[0-9]+" />
         <php_minimum>7.4.0</php_minimum>
