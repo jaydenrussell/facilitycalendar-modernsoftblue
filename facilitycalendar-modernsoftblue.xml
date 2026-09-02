@@ -2,7 +2,7 @@
 <extension type="package" version="3.0" method="upgrade">
     <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
     <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
-    <version>1.5.21</version>
+    <version>1.5.22</version>
     <creationDate>September 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
@@ -12,7 +12,7 @@
     <description>Modern Soft Blue card-style theme for the Facility Calendar Upcoming Event List module (mod_facilitycalendar_event_list).</description>
 
     <files>
-        <file type="file" id="modernsoftblue-files" folder="modernsoftblue">modernsoftblue.xml</file>
+        <file type="file" id="modernsoftblue-files">modernsoftblue</file>
     </files>
 
     <scriptfile>script.php</scriptfile>

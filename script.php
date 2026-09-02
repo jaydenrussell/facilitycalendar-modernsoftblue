@@ -2,13 +2,11 @@
 /**
  * Facility Calendar Upcoming Event List — Modern Soft Blue — installer script
  *
- * Flat package installer (Joomla 3.8+). No child extensions.
- * All file deployment is handled by this script in postflight.
+ * Package installer (Joomla 3.8+) with a child file extension.
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
- *   postflight — copy files from package staging folder to final locations,
- *                patch module manifest to add layout override support
+ *   postflight — patch module manifest to add layout override support, register language strings
  *   uninstall  — remove deployed files, restore module manifest backup
  *
  * @copyright   Copyright (C) 2026 Simcoe Curling Club
@@ -131,26 +129,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        $srcRoot = null;
-        if (is_object($adapter) && method_exists($adapter, 'getPath')) {
-            $srcRoot = $adapter->getPath('source');
-        }
-        if (!$srcRoot || !is_dir($srcRoot)) {
-            $srcRoot = dirname(__FILE__);
-        }
-        $srcRoot = rtrim($srcRoot, '/\\') . '/';
-
-        $srcTpl  = $srcRoot . 'modernsoftblue/files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
-        $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
-        $this->deployFolder($srcTpl, $destTpl);
-
-        $srcMedia  = $srcRoot . 'modernsoftblue/files/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
-        $destMedia = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
-        $this->deployFolder($srcMedia, $destMedia);
-
-        $srcLang  = $srcRoot . 'modernsoftblue/files/language/en-GB/';
-        $destLang = JPATH_ROOT . '/language/en-GB/';
-        $this->deployFolder($srcLang, $destLang);
+        // Files (template override, media, language) are deployed natively by the
+        // package's child file extension (Joomla 3 <fileset> handling). This script
+        // only patches the module manifest and registers the language strings.
 
         $this->loadLanguageFiles();
 
@@ -168,33 +149,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         );
 
         return true;
-    }
-
-    private function deployFolder(string $src, string $dest): void
-    {
-        if (!is_dir($src)) {
-            return;
-        }
-
-        if (!is_dir($dest)) {
-            @mkdir($dest, 0755, true);
-        }
-
-        $items = scandir($src);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-
-            $srcPath  = $src . $item;
-            $destPath = $dest . $item;
-
-            if (is_dir($srcPath)) {
-                $this->deployFolder($srcPath . '/', $destPath . '/');
-            } else {
-                @copy($srcPath, $destPath);
-            }
-        }
     }
 
     private function removeRecursive(string $dir): void
