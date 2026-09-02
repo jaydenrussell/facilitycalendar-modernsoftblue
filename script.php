@@ -62,6 +62,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             if (file_exists($p)) { @unlink($p); }
         }
 
+        $this->removeRecursive(JPATH_ROOT . '/modernsoftblue/');
+
         $backupPath = self::MODULE_XML_PATH . self::BACKUP_SUFFIX;
         if (file_exists($backupPath)) {
             if (is_writable(self::MODULE_XML_PATH) && is_readable($backupPath)) {
@@ -132,6 +134,20 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
+        $srcRoot = JPATH_ROOT . '/modernsoftblue/';
+
+        $srcTpl  = $srcRoot . 'templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
+        $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
+        $this->deployFolder($srcTpl, $destTpl);
+
+        $srcMedia  = $srcRoot . 'media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
+        $destMedia = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
+        $this->deployFolder($srcMedia, $destMedia);
+
+        $srcLang  = $srcRoot . 'language/en-GB/';
+        $destLang = JPATH_ROOT . '/language/en-GB/';
+        $this->deployFolder($srcLang, $destLang);
+
         $this->loadLanguageFiles();
 
         if (!$this->patchModuleManifest($app)) {
@@ -175,6 +191,29 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 @copy($srcPath, $destPath);
             }
         }
+    }
+
+    private function removeRecursive(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $items = scandir($dir);
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dir . $item;
+            if (is_dir($path)) {
+                $this->removeRecursive($path . '/');
+            } else {
+                @unlink($path);
+            }
+        }
+
+        @rmdir($dir);
     }
 
     private function loadLanguageFiles(): void
