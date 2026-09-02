@@ -3,6 +3,7 @@
  * Facility Calendar Upcoming Event List — Modern Soft Blue — installer script
  *
  * Flat package installer (Joomla 3.8+). No child extensions.
+ * All file deployment is handled by this script in postflight.
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
@@ -130,35 +131,24 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        $manifestPath = null;
+        $srcRoot = null;
         if (is_object($adapter) && method_exists($adapter, 'getPath')) {
-            $manifestPath = $adapter->getPath('manifest');
+            $srcRoot = $adapter->getPath('source');
         }
-        if (!$manifestPath || !file_exists($manifestPath)) {
-            $fallback = dirname(__FILE__) . '/facilitycalendar-modernsoftblue.xml';
-            if (file_exists($fallback)) {
-                $manifestPath = $fallback;
-            }
+        if (!$srcRoot || !is_dir($srcRoot)) {
+            $srcRoot = dirname(__FILE__);
         }
-        if (!$manifestPath) {
-            $app->enqueueMessage(
-                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
-                'warning'
-            );
-            return false;
-        }
+        $srcRoot = rtrim($srcRoot, '/\\') . '/';
 
-        $srcRoot = dirname($manifestPath) . '/modernsoftblue/';
-
-        $srcTpl  = $srcRoot . 'templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
+        $srcTpl  = $srcRoot . 'modernsoftblue/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $this->deployFolder($srcTpl, $destTpl);
 
-        $srcMedia  = $srcRoot . 'media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
+        $srcMedia  = $srcRoot . 'modernsoftblue/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $destMedia = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $this->deployFolder($srcMedia, $destMedia);
 
-        $srcLang  = $srcRoot . 'language/en-GB/';
+        $srcLang  = $srcRoot . 'modernsoftblue/language/en-GB/';
         $destLang = JPATH_ROOT . '/language/en-GB/';
         $this->deployFolder($srcLang, $destLang);
 
