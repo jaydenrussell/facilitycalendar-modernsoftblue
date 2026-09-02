@@ -27,22 +27,22 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 
 ```bash
 cd facilitycalendar-modernsoftblue
-zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.11.zip .
+zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.12.zip .
 ```
 
 Verify the zip checksum matches the release asset before installing:
 
 ```bash
-sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.11.zip
+sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.12.zip
 ```
 
-Expected: `2c2c32369991ec890d0ddd8fedc825cf58202a2f4602091fb70fe63a96f60f3e`
+Expected: `d069d8de8559df8acac4039c313f1ddafe841bc7a78d18ee70bb12a3da5b70f3`
 
-Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.11.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
+Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.12.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
 
 ### 2. Install in Joomla
 
-**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.11.zip`.
+**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.12.zip`.
 
 The package automatically:
 - Installs the `modernsoftblue.php` layout to `templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/`
@@ -99,25 +99,27 @@ The post-flight script (`script.php`) runs after install and update:
 
 ```
 facilitycalendar-modernsoftblue/
-├── facilitycalendar-modernsoftblue.xml   # Package manifest (flat — no child file extension)
+├── facilitycalendar-modernsoftblue.xml   # Package manifest (declares placeholder child extension)
 ├── script.php                            # Installer script (deploys files, patches manifest)
 ├── update.xml                            # Joomla update server XML
 ├── CHANGELOG.xml                         # Joomla update changelog
-└── files/
-    ├── language/
-    │   └── en-GB/
-    │       ├── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini
-    │       └── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
-    ├── media/
-    │   └── mod_facilitycalendar_upcomingeventlist_modernsoftblue/
-    │       ├── modernsoftblue.css
-    │       └── clock.svg
-    └── templates/
-        └── tpl_jdseattle/
-            └── html/
-                └── mod_facilitycalendar_event_list/
-                    ├── modernsoftblue.php
-                    └── index.html
+└── modernsoftblue/
+    ├── modernsoftblue.xml                # Placeholder file extension (no files declared)
+    └── files/
+        ├── language/
+        │   └── en-GB/
+        │       ├── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini
+        │       └── en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.sys.ini
+        ├── media/
+        │   └── mod_facilitycalendar_upcomingeventlist_modernsoftblue/
+        │       ├── modernsoftblue.css
+        │       └── clock.svg
+        └── templates/
+            └── tpl_jdseattle/
+                └── html/
+                    └── mod_facilitycalendar_event_list/
+                        ├── modernsoftblue.php
+                        └── index.html
 ```
 
 ## License

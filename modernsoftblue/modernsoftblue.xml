@@ -2,24 +2,12 @@
 <extension type="file" version="3.0" method="upgrade">
     <name>Facility Calendar Upcoming Event List - Modern Soft Blue (Files)</name>
     <packagename>facilitycalendar-upcomingeventlist-modernsoftblue-files</packagename>
-    <version>1.5.9</version>
+    <version>1.5.12</version>
     <creationDate>September 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
     <authorUrl>https://simcoecurlingclub.ca</authorUrl>
     <copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <description>Modern Soft Blue card-style theme files for the Facility Calendar Upcoming Event List module (mod_facilitycalendar_event_list).</description>
-
-    <fileset>
-        <files target="templates/tpl_jdseattle/html/mod_facilitycalendar_event_list" folder="files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list">
-            <filename>modernsoftblue.php</filename>
-            <filename>index.html</filename>
-        </files>
-        <files target="media/mod_facilitycalendar_upcomingeventlist_modernsoftblue" folder="files/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue">
-            <filename>modernsoftblue.css</filename>
-            <filename>index.html</filename>
-            <filename>clock.svg</filename>
-        </files>
-    </fileset>
+    <description>Placeholder file extension for the Modern Soft Blue package. All file deployment is handled by the package installer script; this extension declares no files of its own.</description>
 </extension>

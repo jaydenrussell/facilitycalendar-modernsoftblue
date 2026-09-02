@@ -48,24 +48,6 @@
   background: #1890d7;
 }
 
-/* ---- Floating Badge (top-right corner) ---- */
-#msb-facilitycalendar .msb-card--events::after {
-  content: "";
-  position: absolute;
-  top: -16px;
-  right: 14px;
-  width: 52px;
-  height: 52px;
-  /* Badge reference — if the image is missing this rule is ignored by the browser. */
-  background-image: url("scc-calendar-badge.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  transform: rotate(9deg);
-  box-shadow: 0 6px 10px rgba(17, 24, 39, 0.25);
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* ---- Event List ---- */
 #msb-facilitycalendar .facility-upcoming-events {
   list-style: none;
@@ -183,7 +165,7 @@
   line-height: 1;
 }
 
-/* Clock SVG icon — loaded from same-folder SVG reference */
+/* Clock SVG icon */
 #msb-facilitycalendar .facility-event-time::before {
   content: "";
   width: 11px;
@@ -207,13 +189,6 @@
   #msb-facilitycalendar .msb-card {
     padding: 1rem 1rem;
     border-radius: 12px;
-  }
-
-  #msb-facilitycalendar .msb-card--events::after {
-    width: 42px;
-    height: 42px;
-    top: -12px;
-    right: 10px;
   }
 
   #msb-facilitycalendar .facility-event-date {

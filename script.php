@@ -4,8 +4,9 @@
  *
  * Provides install, update, and uninstall lifecycle hooks (Joomla 3.8+).
  *
- * This is a flat package: there is no separate file extension child.
- * All file deployment happens in postflight; cleanup happens in uninstall.
+ * This package uses a placeholder child file extension (modernsoftblue.xml)
+ * to satisfy Joomla 3's PackageAdapter, which requires at least one child
+ * extension. All actual file deployment is handled by this script.
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
@@ -22,21 +23,13 @@ use Joomla\CMS\Language\Text;
 
 class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 {
-    /** Minimum Joomla version required */
     private string $minimumJoomla = '3.8.0';
+    private string $minimumPhp    = '7.4.0';
 
-    /** Minimum PHP version required */
-    private string $minimumPhp = '7.4.0';
-
-    /** Name of the upstream module this package patches */
     private const MODULE_NAME     = 'mod_facilitycalendar_event_list';
     private const MODULE_XML_PATH = JPATH_BASE . '/modules/' . self::MODULE_NAME . '/' . self::MODULE_NAME . '.xml';
-
-    /** Backup file placed alongside the module manifest during patch */
-    private const BACKUP_SUFFIX = '.msb-backup';
-
-    /** Lock file suffix to prevent concurrent backup/restore operations */
-    private const LOCK_SUFFIX = '.msb-lock';
+    private const BACKUP_SUFFIX   = '.msb-backup';
+    private const LOCK_SUFFIX     = '.msb-lock';
 
     public function install($adapter): bool { return true; }
     public function update($adapter): bool   { return true; }
@@ -45,7 +38,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        // Remove deployed template overrides
         $tplDir  = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $tplFiles = ['modernsoftblue.php', 'index.html'];
         foreach ($tplFiles as $f) {
@@ -53,7 +45,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             if (file_exists($p)) { @unlink($p); }
         }
 
-        // Remove deployed media files
         $mediaDir  = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $mediaFiles = ['modernsoftblue.css', 'clock.svg', 'index.html'];
         foreach ($mediaFiles as $f) {
@@ -61,7 +52,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             if (file_exists($p)) { @unlink($p); }
         }
 
-        // Remove deployed language files
         $langDir  = JPATH_ROOT . '/language/en-GB/';
         $langFiles = [
             'en-GB.pkg_facilitycalendar_upcomingeventlist_modernsoftblue.ini',
@@ -72,7 +62,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             if (file_exists($p)) { @unlink($p); }
         }
 
-        // Restore module manifest from backup
         $backupPath = self::MODULE_XML_PATH . self::BACKUP_SUFFIX;
         if (file_exists($backupPath)) {
             if (is_writable(self::MODULE_XML_PATH) && is_readable($backupPath)) {
@@ -93,7 +82,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             }
         }
 
-        // Clear manifest cache so Joomla re-reads the restored module manifest
         if (class_exists('JCache')) {
             $cache = JFactory::getCache('_system', '');
             if (method_exists($cache, 'clean')) {
@@ -144,28 +132,22 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        // Locate the package source directory (where Joomla extracted the zip)
         $srcDir = dirname($parent->getPath('manifest'));
 
-        // Deploy template overrides
-        $srcTpl  = $srcDir . '/files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
+        $srcTpl  = $srcDir . '/modernsoftblue/files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $this->deployFolder($srcTpl, $destTpl);
 
-        // Deploy media files
-        $srcMedia  = $srcDir . '/files/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
+        $srcMedia  = $srcDir . '/modernsoftblue/files/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $destMedia = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $this->deployFolder($srcMedia, $destMedia);
 
-        // Deploy language files
-        $srcLang  = $srcDir . '/files/language/en-GB/';
+        $srcLang  = $srcDir . '/modernsoftblue/files/language/en-GB/';
         $destLang = JPATH_ROOT . '/language/en-GB/';
         $this->deployFolder($srcLang, $destLang);
 
-        // Load language files from deployed location
         $this->loadLanguageFiles();
 
-        // Patch module manifest to add layout dropdown
         if (!$this->patchModuleManifest($app)) {
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
@@ -182,9 +164,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         return true;
     }
 
-    /**
-     * Recursively copy a folder from source to destination.
-     */
     private function deployFolder(string $src, string $dest): void
     {
         if (!is_dir($src)) {
@@ -212,9 +191,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
     }
 
-    /**
-     * Load the package's language files from their deployed location.
-     */
     private function loadLanguageFiles(): void
     {
         $langDir = JPATH_ROOT . '/language/en-GB/';
@@ -233,9 +209,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
     }
 
-    /**
-     * Acquire an exclusive lock in Joomla's temp directory.
-     */
     private function acquireLock(): ?resource
     {
         $tmpPath = Factory::getApplication()->get('tmp_path');
@@ -261,9 +234,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         return $handle;
     }
 
-    /**
-     * Release the lock and remove the lock file.
-     */
     private function releaseLock($handle): void
     {
         if (!is_resource($handle)) {
@@ -284,10 +254,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
     }
 
-    /**
-     * Inject the layout field into the upstream module's manifest using DOMDocument.
-     * A backup of the original manifest is created before writing.
-     */
     private function patchModuleManifest($app): bool
     {
         if (!file_exists(self::MODULE_XML_PATH)) {
@@ -300,7 +266,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         $content = file_get_contents(self::MODULE_XML_PATH);
 
-        // Strip DTDs to prevent XXE attacks (multi-line aware)
         $content = preg_replace('#<!DOCTYPE[^>]*?(?:\[.*?\])?>#si', '', $content);
         $content = preg_replace('#<!ENTITY[^>]*>#i', '', $content);
 
@@ -323,7 +288,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         $xpath = new DOMXPath($dom);
 
-        // Idempotency check — skip if layout field already exists
         if ($xpath->query('//fieldset[@name="advanced"]/field[@name="layout"]')->length > 0) {
             return true;
         }
@@ -356,7 +320,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             return false;
         }
 
-        // Verify XML is well-formed before writing
         $verifyDom = new DOMDocument();
         $verifyDom->preserveWhiteSpace = true;
         $verifyDom->formatOutput       = false;
@@ -388,7 +351,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             return false;
         }
 
-        // Backup original manifest
         $backupBytes = file_put_contents(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, $content, LOCK_EX);
         $contentLen  = strlen($content);
 
@@ -404,7 +366,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             return false;
         }
 
-        // Atomic write: write to .tmp then rename
         $tmpPath = self::MODULE_XML_PATH . '.tmp';
         $bytes   = file_put_contents($tmpPath, $newContent, LOCK_EX);
         $newLen  = strlen($newContent);

@@ -82,8 +82,6 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
     <?php endif; ?>
     <div class="msb-card-body">
       <?php
-      // Adaptive memory guard: compute safe buffer from host memory_limit.
-      // Default to 512KB on hosts with very low memory, up to 2MB on high-memory hosts.
       $memLimit = ini_get('memory_limit');
       $memBytes = ($memLimit === '' || $memLimit === '-1') ? 256 * 1024 * 1024 : (int)$memLimit * 1024 * 1024;
       $maxBufferSize = (int)min(max($memBytes * 0.4, 256 * 1024), 2 * 1024 * 1024);
@@ -109,7 +107,6 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
           foreach ($timeNodes as $node) {
               $t = trim($node->textContent);
 
-              // Only normalize values that look like actual times (e.g. "08:30 AM", "12:00 PM")
               if (preg_match('~^\d{1,2}:\d{2}\s*(AM|PM)$~i', $t)) {
                   if (preg_match('~^12:00\s*AM$~i', $t)) {
                       $t = 'All Day';
@@ -120,7 +117,6 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
               }
           }
 
-          // Serialize body children only to avoid doctype/html/body wrappers
           $body = $dom->getElementsByTagName('body')->item(0);
           $out = '';
           if ($body) {
@@ -129,8 +125,6 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
               }
           }
 
-          // Post-transform validation: if output length changed by more than 20% vs original,
-          // the DOM transformation likely broke the structure — fall back to raw HTML.
           $originalLength = strlen($html);
           $transformedLength = strlen($out);
           if ($out !== '' && $originalLength > 0 && abs($originalLength - $transformedLength) <= $originalLength * 0.2) {
