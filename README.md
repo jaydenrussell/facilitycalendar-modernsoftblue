@@ -28,14 +28,22 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 
 ```bash
 cd facilitycalendar-modernsoftblue
-zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.5.zip .
+zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.6.zip .
 ```
 
-Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.5.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
+Verify the zip checksum matches the release asset before installing:
+
+```bash
+sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.6.zip
+```
+
+Expected: `E49F4C76057A44CD4015AA74B1D6E36CDBD00CF9A81C8271DC8AEACCA7A7ECAE`
+
+Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.6.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
 
 ### 2. Install in Joomla
 
-**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.5.zip`.
+**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.6.zip`.
 
 The package automatically:
 - Installs the `modernsoftblue.php` layout to `templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/`
@@ -63,10 +71,13 @@ In the module's **Advanced** tab, set **Module Layout** back to **Default**. Ori
 
 Uninstalling this package will automatically revert the module manifest patch, restoring the original manifest without the layout field. You can then safely uninstall `mod_facilitycalendar_event_list` if desired.
 
+**Note:** Re-installing this package overwrites the deployed `modernsoftblue.css` and `clock.svg` in the Joomla media folder. Do not edit those files in place; customize via child CSS or a separate stylesheet.
+
 ## Performance notes
 
-- The layout override buffers the upstream module output to normalize event times. A 512KB output limit is enforced to protect cheap shared-hosting `memory_limit`; if the upstream HTML exceeds that limit, the layout falls back to raw HTML without time normalization. This only affects sites with very large event lists or plugin-injected output.
-- If you regularly exceed the 512KB cap, increase `memory_limit` in `php.ini` rather than disabling the limit.
+- The layout override buffers the upstream module output to normalize event times. An adaptive buffer limit is computed from the host's `memory_limit` (40% of available memory, clamped to 256KB–2MB). If the upstream HTML exceeds that limit, the layout falls back to raw HTML without time normalization. This only affects sites with very large event lists or plugin-injected output.
+- If you regularly exceed the buffer cap, increase `memory_limit` in `php.ini` rather than disabling the limit.
+- Sites running PHP 7.4–8.1 are supported. Joomla's updater does not enforce `php_minimum` during update checks, so sites on PHP < 7.4 must not apply the update manually.
 
 ## What the installer does
 

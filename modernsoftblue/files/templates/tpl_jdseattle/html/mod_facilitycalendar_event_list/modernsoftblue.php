@@ -32,8 +32,12 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 
-/** Scoped wrapper ID — deterministic, no randomness needed */
-$msb_facilitycalendar_wrapper_id = 'msb-facilitycalendar';
+if (!function_exists('msb_facilitycalendar_wrapper_id')) {
+    function msb_facilitycalendar_wrapper_id(): string
+    {
+        return 'msb-facilitycalendar';
+    }
+}
 
 /** Absolute path to the upstream module's default layout */
 $modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
@@ -62,28 +66,38 @@ if (!file_exists($modTmpl)) : ?>
 
 /** Validate the upstream template path: must be a regular file within the upstream module's tmpl directory, not a symlink or device. */
 $modTmplReal = realpath($modTmpl);
-if ($modTmplReal === false || strpos($modTmplReal, JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/') !== 0) : ?>
+$modTmplDir = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/';
+
+if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_replace('\\', '/', $modTmplDir)) !== 0) : ?>
   <?php if (Factory::getApplication()->get('debug')) : ?>
     <p><strong>[msb]</strong> Upstream layout path invalid or outside module directory: <code><?php echo htmlspecialchars($modTmpl, ENT_QUOTES, 'UTF-8'); ?></code></p>
   <?php endif; ?>
   <?php return; ?>
 <?php endif; ?>
 
-<div id="<?php echo $msb_facilitycalendar_wrapper_id; ?>">
+<div id="<?php echo msb_facilitycalendar_wrapper_id(); ?>">
   <section class="msb-card msb-card--events">
     <?php if (trim($module->title) !== '') : ?>
       <h3 class="msb-card-title"><?php echo htmlspecialchars($module->title, ENT_QUOTES, 'UTF-8'); ?></h3>
     <?php endif; ?>
     <div class="msb-card-body">
       <?php
+      // Adaptive memory guard: compute safe buffer from host memory_limit.
+      // Default to 512KB on hosts with very low memory, up to 2MB on high-memory hosts.
+      $memLimit = ini_get('memory_limit');
+      $memBytes = ($memLimit === '' || $memLimit === '-1') ? 256 * 1024 * 1024 : (int)$memLimit * 1024 * 1024;
+      $maxBufferSize = (int)min(max($memBytes * 0.4, 256 * 1024), 2 * 1024 * 1024);
+
       ob_start();
       require $modTmplReal;
       $html = ob_get_clean();
 
-      // Limit buffer size to prevent memory exhaustion on cheap shared hosting.
-      // Skip normalization if upstream output exceeds 512KB; output raw HTML instead.
-      $maxBufferSize = 512 * 1024;
-      if (strlen($html) <= $maxBufferSize) {
+      if (strlen($html) > $maxBufferSize) {
+          if (Factory::getApplication()->get('debug')) {
+              echo '<p><strong>[msb]</strong> Upstream output exceeds ' . round($maxBufferSize / 1024) . 'KB limit; skipping time normalization to preserve memory.</p>';
+          }
+          echo $html;
+      } else {
           $dom = new DOMDocument();
           $dom->preserveWhiteSpace = true;
           $dom->formatOutput = false;
@@ -95,13 +109,15 @@ if ($modTmplReal === false || strpos($modTmplReal, JPATH_BASE . '/modules/mod_fa
           foreach ($timeNodes as $node) {
               $t = trim($node->textContent);
 
-              if (preg_match('~^12:00\s*AM$~i', $t)) {
-                  $t = 'All Day';
-              } else {
-                  $t = preg_replace('~^0(?=\d)~', '', $t);
+              // Only normalize values that look like actual times (e.g. "08:30 AM", "12:00 PM")
+              if (preg_match('~^\d{1,2}:\d{2}\s*(AM|PM)$~i', $t)) {
+                  if (preg_match('~^12:00\s*AM$~i', $t)) {
+                      $t = 'All Day';
+                  } else {
+                      $t = preg_replace('~^0(?=\d)~', '', $t);
+                  }
+                  $node->textContent = $t;
               }
-
-              $node->textContent = $t;
           }
 
           // Serialize body children only to avoid doctype/html/body wrappers
@@ -113,16 +129,15 @@ if ($modTmplReal === false || strpos($modTmplReal, JPATH_BASE . '/modules/mod_fa
               }
           }
 
-          if ($out !== '') {
+          // Post-transform validation: if output length changed by more than 20% vs original,
+          // the DOM transformation likely broke the structure — fall back to raw HTML.
+          $originalLength = strlen($html);
+          $transformedLength = strlen($out);
+          if ($out !== '' && $originalLength > 0 && abs($originalLength - $transformedLength) <= $originalLength * 0.2) {
               echo $out;
           } else {
               echo $html;
           }
-      } else {
-          if (Factory::getApplication()->get('debug')) {
-              echo '<p><strong>[msb]</strong> Upstream output exceeds 512KB limit; skipping time normalization to preserve memory.</p>';
-          }
-          echo $html;
       }
       ?>
     </div>

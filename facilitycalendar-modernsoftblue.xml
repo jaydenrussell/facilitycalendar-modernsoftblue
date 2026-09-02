@@ -2,7 +2,7 @@
 <extension type="package" version="3.0" method="upgrade">
     <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
     <packagename>facilitycalendar-upcomingeventlist-modernsoftblue</packagename>
-    <version>1.5.5</version>
+    <version>1.5.6</version>
     <creationDate>September 2026</creationDate>
     <author>Jayden Russell</author>
     <authorEmail>jayden@simcoecurlingclub.ca</authorEmail>
@@ -24,7 +24,7 @@
 
     <updateservers>
         <server type="extension" priority="1" name="Facility Calendar Upcoming Event List — Modern Soft Blue Updates">
-            https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/master/update.xml
+            https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/updates/update.xml
         </server>
     </updateservers>
 </extension>
