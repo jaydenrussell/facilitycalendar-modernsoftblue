@@ -38,15 +38,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     /** Lock file suffix to prevent concurrent backup/restore operations */
     private const LOCK_SUFFIX = '.msb-lock';
 
-    public function install($adapter): bool
-    {
-        return true;
-    }
-
-    public function update($adapter): bool
-    {
-        return true;
-    }
+    public function install($adapter): bool { return true; }
+    public function update($adapter): bool   { return true; }
 
     public function uninstall($adapter): bool
     {
@@ -163,6 +156,11 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         $srcMedia  = $srcDir . '/files/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $destMedia = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $this->deployFolder($srcMedia, $destMedia);
+
+        // Deploy language files
+        $srcLang  = $srcDir . '/files/language/en-GB/';
+        $destLang = JPATH_ROOT . '/language/en-GB/';
+        $this->deployFolder($srcLang, $destLang);
 
         // Load language files from deployed location
         $this->loadLanguageFiles();
