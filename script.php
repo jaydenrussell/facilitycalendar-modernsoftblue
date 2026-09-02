@@ -105,8 +105,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             return false;
         }
 
-        $this->checkBadge($app);
-
         return true;
     }
 
@@ -396,20 +394,5 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
 
         return true;
-    }
-
-    /**
-     * Check that the SCC badge image exists in the media folder and notify if missing.
-     */
-    private function checkBadge($app): void
-    {
-        $badgePath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/scc-calendar-badge.png';
-
-        if (!file_exists($badgePath)) {
-            $app->enqueueMessage(
-                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BADGE_MISSING'),
-                'notice'
-            );
-        }
     }
 }

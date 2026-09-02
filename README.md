@@ -13,7 +13,6 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 - Semibold dark titles with blue accent bar
 - Secondary muted times with clock icon
 - Time normalization: `12:00 AM` → "All Day", leading zeroes trimmed
-- Badge PNG on hover lift effect
 - Scoped CSS — won't leak to other modules
 
 ## Requirements
@@ -28,28 +27,27 @@ A modern, card-style theme for the **mod_facilitycalendar_event_list** Joomla mo
 
 ```bash
 cd facilitycalendar-modernsoftblue
-zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.7.zip .
+zip -r ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip .
 ```
 
 Verify the zip checksum matches the release asset before installing:
 
 ```bash
-sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.7.zip
+sha256sum ../facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip
 ```
 
-Expected: `93dd7519b3a61a770075b092e270839749d13191d009948cff1cb30b47e9695b`
+Expected: `58cd59970c35dd81abd9ffd7d067570626d9a5e25e12f4b311ab79d5126b0462`
 
-Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.7.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
+Or download `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip` from the [Releases](https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases) page.
 
 ### 2. Install in Joomla
 
-**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.7.zip`.
+**Extensions → Manage → Install → Upload Package File** → select `facilitycalendar-upcomingeventlist-modernsoftblue-v1.5.8.zip`.
 
 The package automatically:
 - Installs the `modernsoftblue.php` layout to `templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/`
-- Installs the `modernsoftblue.css` stylesheet and badge to the Joomla media folder
+- Installs the `modernsoftblue.css` stylesheet to the Joomla media folder
 - Patches the module's XML manifest to add the **Module Layout** dropdown (idempotent — safe to re-install)
-- Checks for `scc-calendar-badge.png` in the media folder and warns if missing
 
 Post-install messages will confirm what was done.
 
@@ -110,7 +108,6 @@ facilitycalendar-modernsoftblue/
         ├── media/
         │   └── mod_facilitycalendar_upcomingeventlist_modernsoftblue/
         │       ├── modernsoftblue.css
-        │       ├── scc-calendar-badge.png
         │       └── clock.svg
         └── templates/
             └── tpl_jdseattle/

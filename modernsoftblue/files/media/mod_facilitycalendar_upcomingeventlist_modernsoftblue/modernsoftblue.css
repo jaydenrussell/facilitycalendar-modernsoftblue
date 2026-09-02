@@ -56,9 +56,7 @@
   right: 14px;
   width: 52px;
   height: 52px;
-  /* Badge shipped into the same media folder as this stylesheet.
-     Resolved by the browser as a same-folder relative URL,
-     independent of the site's /images/ directory layout. */
+  /* Badge reference — if the image is missing this rule is ignored by the browser. */
   background-image: url("scc-calendar-badge.png");
   background-size: contain;
   background-repeat: no-repeat;
