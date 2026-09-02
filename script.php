@@ -140,15 +140,15 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
         $srcRoot = rtrim($srcRoot, '/\\') . '/';
 
-        $srcTpl  = $srcRoot . 'modernsoftblue/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
+        $srcTpl  = $srcRoot . 'modernsoftblue/files/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $destTpl = JPATH_ROOT . '/templates/tpl_jdseattle/html/mod_facilitycalendar_event_list/';
         $this->deployFolder($srcTpl, $destTpl);
 
-        $srcMedia  = $srcRoot . 'modernsoftblue/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
+        $srcMedia  = $srcRoot . 'modernsoftblue/files/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $destMedia = JPATH_ROOT . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/';
         $this->deployFolder($srcMedia, $destMedia);
 
-        $srcLang  = $srcRoot . 'modernsoftblue/language/en-GB/';
+        $srcLang  = $srcRoot . 'modernsoftblue/files/language/en-GB/';
         $destLang = JPATH_ROOT . '/language/en-GB/';
         $this->deployFolder($srcLang, $destLang);
 
