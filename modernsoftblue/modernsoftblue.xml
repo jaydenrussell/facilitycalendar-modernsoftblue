@@ -11,7 +11,7 @@
     <license>GNU General Public License version 2 or later</license>
     <description>File extension that deploys template overrides, media assets, and language files for the Modern Soft Blue theme.</description>
 
-    <files folder="files">
+    <files>
         <folder>language</folder>
         <folder>media</folder>
         <folder>templates</folder>
