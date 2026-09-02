@@ -24,10 +24,8 @@
  * not embedded inline, so they can be cached by the browser/CDN.
  * `detectDebug => false` suppresses the built-in minified-file lookup (we
  * ship only modernsoftblue.css; debug mode does not require a .min variant).
- * A cache-busting query string (package version) is appended so the browser and
- * CDN fetch a fresh copy immediately after a version update without needing
- * a URL change. The version is stable across deploys and does not depend on
- * filesystem mtime, which can return false on flaky or cached I/O.
+ * A cache-busting query string based on the CSS file's mtime is appended
+ * so browsers/CDNs fetch a fresh copy after a version update.
  */
 defined('_JEXEC') or die;
 
@@ -42,8 +40,12 @@ $modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.p
 
 /** Cache-busting query string based on the CSS file's mtime so browsers/CDNs fetch a fresh copy after a version update. */
 $cssPath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css';
-clearstatcache(true, $cssPath);
-$cssMtime = file_exists($cssPath) ? filemtime($cssPath) : '1.5.2';
+if (file_exists($cssPath)) {
+    clearstatcache(true, $cssPath);
+    $cssMtime = filemtime($cssPath);
+} else {
+    $cssMtime = '1.5.3';
+}
 
 HTMLHelper::stylesheet(
     'mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css?' . $cssMtime,

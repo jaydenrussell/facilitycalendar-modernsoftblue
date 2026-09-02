@@ -20,7 +20,6 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Language\Text;
 
 class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
@@ -41,17 +40,17 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     /** Lock file suffix to prevent concurrent backup/restore operations */
     private const LOCK_SUFFIX = '.msb-lock';
 
-    public function install(InstallerAdapter $adapter): bool
+    public function install($adapter): bool
     {
         return true;
     }
 
-    public function update(InstallerAdapter $adapter): bool
+    public function update($adapter): bool
     {
         return true;
     }
 
-    public function uninstall(InstallerAdapter $adapter): bool
+    public function uninstall($adapter): bool
     {
         $app = Factory::getApplication();
 
@@ -67,7 +66,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         return true;
     }
 
-    public function preflight(string $type, InstallerAdapter $adapter): bool
+    public function preflight(string $type, $adapter): bool
     {
         $app = Factory::getApplication();
 
@@ -98,7 +97,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         return true;
     }
 
-    public function postflight(string $type, InstallerAdapter $adapter): bool
+    public function postflight(string $type, $adapter): bool
     {
         $app = Factory::getApplication();
 
@@ -112,12 +111,12 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     }
 
     /**
-     * Acquire an exclusive lock on the module manifest to prevent
+     * Acquire an exclusive lock in Joomla's temp directory to prevent
      * concurrent backup/restore race conditions.
      */
     private function acquireLock(): ?resource
     {
-        $lockPath = self::MODULE_XML_PATH . self::LOCK_SUFFIX;
+        $lockPath = JPATH_ROOT . '/tmp/mod_facilitycalendar_event_list.msb-lock';
         $handle = fopen($lockPath, 'w');
 
         if (!is_resource($handle)) {
@@ -147,7 +146,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 
         flock($handle, LOCK_UN);
         fclose($handle);
-        $lockPath = self::MODULE_XML_PATH . self::LOCK_SUFFIX;
+        $lockPath = JPATH_ROOT . '/tmp/mod_facilitycalendar_event_list.msb-lock';
         if (file_exists($lockPath)) {
             unlink($lockPath);
         }
@@ -178,7 +177,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         $dom->preserveWhiteSpace = true;
         $dom->formatOutput       = false;
 
-        libxml_disable_entity_loader(true);
+        if (\PHP_VERSION_ID < 80000) {
+            libxml_disable_entity_loader(true);
+        }
         $loaded = $dom->loadXML($content, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
 
         if (!$loaded) {
@@ -225,6 +226,18 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             return false;
         }
 
+        // Verify the saved XML is well-formed before writing to disk
+        $verifyDom = new DOMDocument();
+        $verifyDom->preserveWhiteSpace = true;
+        $verifyDom->formatOutput       = false;
+        if (!$verifyDom->loadXML($newContent, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING)) {
+            $app->enqueueMessage(
+                Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_PATCH_FAILED'),
+                'warning'
+            );
+            return false;
+        }
+
         if (!is_writable(self::MODULE_XML_PATH)) {
             $app->enqueueMessage(
                 sprintf(
@@ -246,7 +259,10 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             return false;
         }
 
-        if (!copy(self::MODULE_XML_PATH, self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
+        // Backup with LOCK_EX to prevent partial reads during copy
+        $backupBytes = file_put_contents(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, $content, LOCK_EX);
+
+        if ($backupBytes === false) {
             $this->releaseLock($lockHandle);
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_BACKUP_FAILED'),
@@ -260,7 +276,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         $bytes = file_put_contents($tmpPath, $newContent, LOCK_EX);
 
         if ($bytes === false) {
-            @unlink($tmpPath);
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
             $this->releaseLock($lockHandle);
             if (file_exists(self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
                 copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
@@ -273,7 +291,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
 
         if (!rename($tmpPath, self::MODULE_XML_PATH)) {
-            @unlink($tmpPath);
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
             if (file_exists(self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
                 copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
             }
@@ -341,6 +361,15 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
 
         $restored = copy($backupPath, self::MODULE_XML_PATH);
+
+        // Verify the restored manifest is well-formed XML
+        if ($restored && file_exists(self::MODULE_XML_PATH)) {
+            $verifyDom = new DOMDocument();
+            $verifyDom->preserveWhiteSpace = true;
+            $verifyDom->formatOutput       = false;
+            $restored = $verifyDom->loadXML(file_get_contents(self::MODULE_XML_PATH), LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+        }
+
         if (file_exists($backupPath)) {
             unlink($backupPath);
         }
