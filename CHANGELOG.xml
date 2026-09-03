@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <updates>
+    <update version="1.5.26">
+        <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
+        <description>Version bump.</description>
+        <date>2026-09-03</date>
+    </update>
     <update version="1.5.25">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
-        <description>Version bump following v1.5.24 feed fix (client/targetplatform).</description>
+        <description>Consolidated onto master branch only; update server URL updated.</description>
         <date>2026-09-03</date>
     </update>
     <update version="1.5.24">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
-        <description>Fix package uninstall: rename package manifest to canonical pkg_facilitycalendar-upcomingeventlist-modernsoftblue.xml; align child extension id; add <client> and <targetplatform> to update feed so updates appear.</description>
+        <description>Fix package uninstall: rename package manifest, align child extension id, add client/targetplatform to feed.</description>
         <date>2026-09-03</date>
     </update>
 </updates>

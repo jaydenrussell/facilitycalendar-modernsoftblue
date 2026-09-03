@@ -5,17 +5,22 @@
         <description>Modern Soft Blue card-style theme for mod_facilitycalendar_event_list</description>
         <element>pkg_facilitycalendar-upcomingeventlist-modernsoftblue</element>
         <type>package</type>
-        <version>1.5.25</version>
+        <version>1.5.26</version>
         <client>site</client>
         <targetplatform name="joomla" version="3\.[0-9]+" />
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <downloads>
-            <downloadurl type="full" format="zip" sha256="569563d3aa5e97965560ddef06868147eb68b903743f1fe3b4dcaa42079f50f6">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/latest/download/facilitycalendar-upcomingeventlist-modernsoftblue.zip</downloadurl>
+            <downloadurl type="full" format="zip" sha256="a8ba520d548846ca9e1d62768909b91c31542136a0832baf99aee92e5cf6e063">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/latest/download/facilitycalendar-upcomingeventlist-modernsoftblue.zip</downloadurl>
         </downloads>
         <tags><tag>stable</tag></tags>
         <maintainer>jaydenrussell</maintainer>
         <maintainerurl>https://github.com/jaydenrussell</maintainerurl>
         <changelogurl>https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/master/CHANGELOG.xml</changelogurl>
+    </update>
+    <update version="1.5.25">
+        <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
+        <description>Consolidated onto master branch only; update server URL updated.</description>
+        <date>2026-09-03</date>
     </update>
     <update version="1.5.24">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
