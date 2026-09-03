@@ -15,6 +15,7 @@
         <tags><tag>stable</tag></tags>
         <maintainer>jaydenrussell</maintainer>
         <maintainerurl>https://github.com/jaydenrussell</maintainerurl>
+        <changelogurl>https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/master/CHANGELOG.xml</changelogurl>
     </update>
     <update version="1.5.24">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
