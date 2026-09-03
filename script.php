@@ -2,18 +2,17 @@
 /**
  * Facility Calendar Upcoming Event List — Modern Soft Blue — installer script
  *
- * Package installer (Joomla 3.8+) with a child file extension.
+ * Package installer (Joomla 3.8+). Has a child file extension.
  *
  * Responsibilities:
  *   preflight  — abort install if Joomla or PHP version is too low
- *   postflight — register language strings, patch the module manifest to add
- *                layout override support, remove the orphaned legacy child
- *   uninstall  — remove deployed files, remove stray package manifests,
- *                restore the module manifest backup
+ *   postflight — register language strings, patch module manifest, remove orphan legacy child
+ *   uninstall  — remove deployed files, remove stray package manifests, restore module manifest backup
  *
  * @copyright   Copyright (C) 2026 Simcoe Curling Club
  * @license     GNU General Public License version 2 or later
  */
+
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
@@ -59,10 +58,8 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             if (file_exists($p)) { @unlink($p); }
         }
 
-        $this->removeRecursive(JPATH_ROOT . '/modernsoftblue/');
+        $this->removeRecursive(JPATH_ROOT . '/facilitycalendar-upcomingeventlist-modernsoftblue-theme/');
 
-        // Remove any stray package manifests left in the manifests/packages folder
-        // from older releases that used a non-canonical manifest filename.
         $manifestDir = JPATH_ADMINISTRATOR . '/manifests/packages/';
         foreach (['facilitycalendar-modernsoftblue.xml', 'pkg_facilitycalendar-upcomingeventlist-modernsoftblue.xml'] as $stray) {
             $p = $manifestDir . $stray;
@@ -139,14 +136,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     {
         $app = Factory::getApplication();
 
-        // Files (template override, media, language) are deployed natively by the
-        // package's child file extension (Joomla 3 <fileset> handling). This script
-        // only patches the module manifest and registers the language strings.
-
         $this->loadLanguageFiles();
-
-        // Remove the orphaned legacy child file extension from older releases
-        // whose element was simply "modernsoftblue".
         $this->removeLegacyChild();
 
         if (!$this->patchModuleManifest($app)) {
@@ -188,10 +178,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         @rmdir($dir);
     }
 
-    /**
-     * Remove the legacy child file-extension record and manifest that older
-     * releases registered with the ambiguous element "modernsoftblue".
-     */
     private function removeLegacyChild(): void
     {
         try {
@@ -225,7 +211,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
                 $db->setQuery('DELETE FROM ' . $db->quoteName('#__extensions') . ' WHERE ' . $db->quoteName('extension_id') . ' = ' . (int) $row->extension_id);
                 $db->execute();
             } catch (\Exception $e) {
-                // ignore, proceeds even if the row cannot be removed
             }
         }
     }
