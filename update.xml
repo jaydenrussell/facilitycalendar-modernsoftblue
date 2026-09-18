@@ -5,17 +5,22 @@
         <description>Modern Soft Blue card-style theme for mod_facilitycalendar_event_list</description>
         <element>pkg_facilitycalendar-upcomingeventlist-modernsoftblue</element>
         <type>package</type>
-        <version>1.5.29</version>
+        <version>1.5.30</version>
         <client>site</client>
         <targetplatform name="joomla" version="3\.[0-9]+" />
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <downloads>
-            <downloadurl type="full" format="zip" sha256="9a20d2fee75de53ebe6977171cb1673de598d3adca347c33a29e4c282fb48d9b">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/latest/download/facilitycalendar-upcomingeventlist-modernsoftblue.zip</downloadurl>
+            <downloadurl type="full" format="zip" sha256="41c50bd4eb7d60169b42cd0c25326fa09b3aeb044a397a645693c7ec83a799b0">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/latest/download/facilitycalendar-upcomingeventlist-modernsoftblue.zip</downloadurl>
         </downloads>
         <tags><tag>stable</tag></tags>
         <maintainer>jaydenrussell</maintainer>
         <maintainerurl>https://github.com/jaydenrussell</maintainerurl>
         <changelogurl>https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/master/CHANGELOG.xml</changelogurl>
+    </update>
+    <update version="1.5.29">
+        <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
+        <description>Second hardening pass: PHP 7.0-compatible installer, symlink-safe guard, structural fallback, exact allowlist, UTF-8-safe parsing, checked rollbacks.</description>
+        <date>2026-09-03</date>
     </update>
     <update version="1.5.28">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>

@@ -47,12 +47,18 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
      */
     private function log(string $message)
     {
-        if (class_exists('JLog')) {
+        if (!class_exists('JLog')) {
+            return;
+        }
+        // Logging must never crash an install: if the log subsystem itself is
+        // broken, drop the message silently (last resort).
+        try {
             \JLog::add(
                 'pkg_facilitycalendar_upcomingeventlist_modernsoftblue: ' . $message,
                 \JLog::WARNING,
                 'jerror'
             );
+        } catch (\Throwable $e) {
         }
     }
 

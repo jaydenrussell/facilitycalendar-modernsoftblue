@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <updates>
+    <update version="1.5.30">
+        <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
+        <description>Render-path hardening: router failures keep original href, unique wrapper ids per instance, collision-proof layout variable scope, crash-proof logging.</description>
+        <date>2026-09-03</date>
+    </update>
     <update version="1.5.29">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
-        <description>Second hardening pass: PHP 7.0-compatible installer (version gate actually executes), symlinked-docroot-safe guard, structural fallback check, exact SEF allowlist, UTF-8-safe parsing, checked rollbacks; recursive-delete primitive removed.</description>
+        <description>Second hardening pass: PHP 7.0-compatible installer, symlink-safe guard, structural fallback, exact allowlist, UTF-8-safe parsing, checked rollbacks.</description>
         <date>2026-09-03</date>
     </update>
     <update version="1.5.28">

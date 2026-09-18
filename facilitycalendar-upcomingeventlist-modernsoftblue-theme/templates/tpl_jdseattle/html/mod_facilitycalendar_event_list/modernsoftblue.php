@@ -19,6 +19,12 @@
  *   - every "index.php?..." href is routed through JRoute::_() so it renders
  *     root-relative and SEF (e.g. /club-events/event-registrations/bonspiel/230-...)
  *
+ * Conventions (do not regress):
+ *   - All layout locals use the msb prefix. This file is included into
+ *     Joomla's scope, and generic local names collide with includer
+ *     variables (proven once already by a test harness).
+ *   - The card wrapper id is unique per module instance on the page.
+ *
  * Module settings:
  *   Basic tab → Show Title = "Hide"   (the card renders its own title; "Show"
  *   duplicates it with the template's own module header)
@@ -36,31 +42,35 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 
 if (!function_exists('msb_facilitycalendar_wrapper_id')) {
+    // Unique per module instance on the page: duplicate ids are invalid HTML
+    // and break fragment/JS targeting. The first instance keeps the bare id.
     function msb_facilitycalendar_wrapper_id(): string
     {
-        return 'msb-facilitycalendar';
+        static $msbInstance = 0;
+        $msbInstance++;
+        return $msbInstance > 1 ? 'msb-facilitycalendar-' . $msbInstance : 'msb-facilitycalendar';
     }
 }
 
 /** Absolute path to the upstream module's default layout */
-$modTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
+$msbModTmpl = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/default.php';
 
 /** Cache-busting query string based on the CSS file's mtime so browsers/CDNs fetch a fresh copy after a version update. */
-$cssPath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css';
-if (file_exists($cssPath)) {
-    clearstatcache(true, $cssPath);
-    $cssMtime = filemtime($cssPath);
+$msbCssPath = JPATH_BASE . '/media/mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css';
+if (file_exists($msbCssPath)) {
+    clearstatcache(true, $msbCssPath);
+    $msbCssMtime = filemtime($msbCssPath);
 } else {
-    $cssMtime = '1.5.5';
+    $msbCssMtime = '1.5.5';
 }
 
 HTMLHelper::stylesheet(
-    'mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css?' . $cssMtime,
+    'mod_facilitycalendar_upcomingeventlist_modernsoftblue/modernsoftblue.css?' . $msbCssMtime,
     ['relative' => true, 'detectDebug' => false]
 );
 
 /** Guard: fatal error is worse than a graceful skip */
-if (!file_exists($modTmpl)) : ?>
+if (!file_exists($msbModTmpl)) : ?>
   <?php if (Factory::getApplication()->get('debug')) : ?>
     <p><strong>[msb]</strong> Upstream layout not found: <code>mod_facilitycalendar_event_list/tmpl/default.php</code></p>
   <?php endif; ?>
@@ -73,10 +83,10 @@ realpath() before comparing: matching a resolved path against a raw base
 breaks on symlinked, junction, or short-name docroots (e.g. atomic-deploy
 "current" symlinks), which would silently disable the module exactly on
 well-run infrastructure. Refuse only when something is genuinely unresolvable. */
-$modTmplReal = realpath($modTmpl);
-$modTmplDirReal = realpath(JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl');
+$msbModTmplReal = realpath($msbModTmpl);
+$msbModTmplDirReal = realpath(JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl');
 
-if ($modTmplReal === false || $modTmplDirReal === false || strpos(str_replace('\\', '/', $modTmplReal), rtrim(str_replace('\\', '/', $modTmplDirReal), '/') . '/') !== 0) : ?>
+if ($msbModTmplReal === false || $msbModTmplDirReal === false || strpos(str_replace('\\', '/', $msbModTmplReal), rtrim(str_replace('\\', '/', $msbModTmplDirReal), '/') . '/') !== 0) : ?>
   <?php if (Factory::getApplication()->get('debug')) : ?>
     <p><strong>[msb]</strong> Upstream layout path invalid or outside module directory: <code>mod_facilitycalendar_event_list/tmpl/default.php</code></p>
   <?php endif; ?>
@@ -90,13 +100,13 @@ if ($modTmplReal === false || $modTmplDirReal === false || strpos(str_replace('\
     <?php endif; ?>
     <div class="msb-card-body">
       <?php
-      $memLimit = ini_get('memory_limit');
-      $memBytes = ($memLimit === '' || $memLimit === '-1') ? 256 * 1024 * 1024 : (int)$memLimit * 1024 * 1024;
-      $maxBufferSize = (int)min(max($memBytes * 0.4, 256 * 1024), 2 * 1024 * 1024);
+      $msbMemLimit = ini_get('memory_limit');
+      $msbMemBytes = ($msbMemLimit === '' || $msbMemLimit === '-1') ? 256 * 1024 * 1024 : (int)$msbMemLimit * 1024 * 1024;
+      $msbMaxBufferSize = (int)min(max($msbMemBytes * 0.4, 256 * 1024), 2 * 1024 * 1024);
 
       ob_start();
-      require $modTmplReal;
-      $html = ob_get_clean();
+      require $msbModTmplReal;
+      $msbHtml = ob_get_clean();
 
       // Without the DOM extension there is nothing safe to transform: output
       // upstream HTML untouched rather than fatal the whole module position.
@@ -107,47 +117,52 @@ if ($modTmplReal === false || $modTmplDirReal === false || strpos(str_replace('\
               return;
           }
           $msbLogged = true;
-          \JLog::add('mod_facilitycalendar_event_list modernsoftblue layout: ' . $message, \JLog::WARNING, 'mod_facilitycalendar_event_list');
+          // Logging must never crash the render path: if the log subsystem
+          // itself is broken, drop the message silently (last resort).
+          try {
+              \JLog::add('mod_facilitycalendar_event_list modernsoftblue layout: ' . $message, \JLog::WARNING, 'mod_facilitycalendar_event_list');
+          } catch (\Throwable $msbLogError) {
+          }
       };
 
       if (!class_exists('DOMDocument')) {
           $msbLogOnce('PHP DOM extension missing; serving unprocessed upstream output.');
-          echo $html;
-      } elseif (strlen($html) > $maxBufferSize) {
-          $msbLogOnce('Upstream output exceeds ' . round($maxBufferSize / 1024) . 'KB limit; serving unprocessed output.');
+          echo $msbHtml;
+      } elseif (strlen($msbHtml) > $msbMaxBufferSize) {
+          $msbLogOnce('Upstream output exceeds ' . round($msbMaxBufferSize / 1024) . 'KB limit; serving unprocessed output.');
           if (Factory::getApplication()->get('debug')) {
-              echo '<p><strong>[msb]</strong> Upstream output exceeds ' . round($maxBufferSize / 1024) . 'KB limit; skipping post-processing to preserve memory.</p>';
+              echo '<p><strong>[msb]</strong> Upstream output exceeds ' . round($msbMaxBufferSize / 1024) . 'KB limit; skipping post-processing to preserve memory.</p>';
           }
-          echo $html;
+          echo $msbHtml;
       } else {
           // DOMDocument::loadHTML defaults to Latin-1 without charset info,
           // which corrupts non-ASCII event titles. Normalize to HTML entities
           // first so UTF-8 survives the round-trip; without mbstring, declare
           // the encoding instead (same guarantee, no extension required).
           if (function_exists('mb_convert_encoding')) {
-              $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
+              $msbHtml = mb_convert_encoding($msbHtml, 'HTML-ENTITIES', 'UTF-8');
           } else {
-              $html = '<?xml encoding="UTF-8">' . $html;
+              $msbHtml = '<?xml encoding="UTF-8">' . $msbHtml;
           }
 
-          $dom = new DOMDocument();
-          $dom->preserveWhiteSpace = true;
-          $dom->formatOutput = false;
-          $dom->loadHTML($html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+          $msbDom = new DOMDocument();
+          $msbDom->preserveWhiteSpace = true;
+          $msbDom->formatOutput = false;
+          $msbDom->loadHTML($msbHtml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
 
-          $xpath = new DOMXPath($dom);
-          $timeNodes = $xpath->query('//*[contains(@class, "facility-event-time")]');
+          $msbXpath = new DOMXPath($msbDom);
+          $msbTimeNodes = $msbXpath->query('//*[contains(@class, "facility-event-time")]');
 
-          foreach ($timeNodes as $node) {
-              $t = trim($node->textContent);
+          foreach ($msbTimeNodes as $msbNode) {
+              $msbT = trim($msbNode->textContent);
 
-              if (preg_match('~^\d{1,2}:\d{2}\s*(AM|PM)$~i', $t)) {
-                  if (preg_match('~^12:00\s*AM$~i', $t)) {
-                      $t = 'All Day';
+              if (preg_match('~^\d{1,2}:\d{2}\s*(AM|PM)$~i', $msbT)) {
+                  if (preg_match('~^12:00\s*AM$~i', $msbT)) {
+                      $msbT = 'All Day';
                   } else {
-                      $t = preg_replace('~^0(?=\d)~', '', $t);
+                      $msbT = preg_replace('~^0(?=\d)~', '', $msbT);
                   }
-                  $node->textContent = $t;
+                  $msbNode->textContent = $msbT;
               }
           }
 
@@ -155,25 +170,31 @@ if ($modTmplReal === false || $modTmplDirReal === false || strpos(str_replace('\
           // hrefs render root-relative and SEF instead of raw query URLs.
           // Exact component match: a substring test would also accept
           // lookalike options such as com_facilitycalendar_evil.
-          $linkNodes = $xpath->query('//a[@href]');
-          foreach ($linkNodes as $link) {
-              $href = trim($link->getAttribute('href'));
-              if (stripos($href, 'index.php') !== 0 || !class_exists('JRoute')) {
+          $msbLinkNodes = $msbXpath->query('//a[@href]');
+          foreach ($msbLinkNodes as $msbLink) {
+              $msbHref = trim($msbLink->getAttribute('href'));
+              if (stripos($msbHref, 'index.php') !== 0 || !class_exists('JRoute')) {
                   continue;
               }
               $msbQuery = array();
-              parse_str((string) parse_url($href, PHP_URL_QUERY), $msbQuery);
+              parse_str((string) parse_url($msbHref, PHP_URL_QUERY), $msbQuery);
               if (!isset($msbQuery['option']) || $msbQuery['option'] !== 'com_facilitycalendar') {
                   continue;
               }
-              $link->setAttribute('href', JRoute::_($href));
+              try {
+                  $msbLink->setAttribute('href', JRoute::_($msbHref));
+              } catch (\Exception $msbRouteError) {
+                  // A router failure must never white-screen the module:
+                  // keep the original href and report once per request.
+                  $msbLogOnce('Router rejected an event link; original href kept.');
+              }
           }
 
-          $body = $dom->getElementsByTagName('body')->item(0);
-          $out = '';
-          if ($body) {
-              foreach ($body->childNodes as $child) {
-                  $out .= $dom->saveHTML($child);
+          $msbBody = $msbDom->getElementsByTagName('body')->item(0);
+          $msbOut = '';
+          if ($msbBody) {
+              foreach ($msbBody->childNodes as $msbChild) {
+                  $msbOut .= $msbDom->saveHTML($msbChild);
               }
           }
 
@@ -181,15 +202,15 @@ if ($modTmplReal === false || $modTmplDirReal === false || strpos(str_replace('\
           // legitimately shifts total byte length, so byte-counting the output
           // would false-negative on link-heavy lists and silently disable the
           // feature. What must hold is structure: same links in, same links out.
-          $msbInLinks = preg_match_all('~<a\s[^>]*href=~i', $html);
-          $msbOutLinks = preg_match_all('~<a\s[^>]*href=~i', $out);
-          if ($out !== '' && $msbInLinks !== false && $msbOutLinks === $msbInLinks) {
-              echo $out;
+          $msbInLinks = preg_match_all('~<a\s[^>]*href=~i', $msbHtml);
+          $msbOutLinks = preg_match_all('~<a\s[^>]*href=~i', $msbOut);
+          if ($msbOut !== '' && $msbInLinks !== false && $msbOutLinks === $msbInLinks) {
+              echo $msbOut;
           } else {
               // Fallback serves upstream output untouched rather than a mangled
               // card. Logged so the skip is visible instead of silent.
               $msbLogOnce('DOM transform diverged from upstream output; serving unprocessed output.');
-              echo $html;
+              echo $msbHtml;
           }
       }
       ?>
