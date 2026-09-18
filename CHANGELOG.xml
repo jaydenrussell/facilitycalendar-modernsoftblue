@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <updates>
+    <update version="1.5.27">
+        <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
+        <description>Fix layout override fatal parse error (missing PHP open tag) and route event links through JRoute for root-relative SEF URLs.</description>
+        <date>2026-09-03</date>
+    </update>
     <update version="1.5.26">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
-        <description>Version bump with rebuilt zip (package + child at 1.5.26).</description>
+        <description>Version bump with rebuilt zip.</description>
         <date>2026-09-03</date>
     </update>
     <update version="1.5.25">

@@ -12,9 +12,12 @@
  *
  * Reverting: set Module Layout back to "Default" in the same dropdown.
  *
- * The module's output is buffered so times can be normalized:
+ * The module's output is buffered so times can be normalized and event
+ * links can be made SEF:
  *   - "12:00 AM" (an all-day placeholder) is shown as "All Day"
  *   - leading zeroes are trimmed ("08:30 AM" -> "8:30 AM")
+ *   - every "index.php?..." href is routed through JRoute::_() so it renders
+ *     root-relative and SEF (e.g. /club-events/event-registrations/bonspiel/230-...)
  *
  * Module settings:
  *   Basic tab → Show Title = "Hide"   (the card renders its own title; "Show"
@@ -64,6 +67,7 @@ if (!file_exists($modTmpl)) : ?>
   <?php return; ?>
 <?php endif; ?>
 
+<?php
 /** Validate the upstream template path: must be a regular file within the upstream module's tmpl directory, not a symlink or device. */
 $modTmplReal = realpath($modTmpl);
 $modTmplDir = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/';
@@ -92,7 +96,7 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
 
       if (strlen($html) > $maxBufferSize) {
           if (Factory::getApplication()->get('debug')) {
-              echo '<p><strong>[msb]</strong> Upstream output exceeds ' . round($maxBufferSize / 1024) . 'KB limit; skipping time normalization to preserve memory.</p>';
+              echo '<p><strong>[msb]</strong> Upstream output exceeds ' . round($maxBufferSize / 1024) . 'KB limit; skipping post-processing to preserve memory.</p>';
           }
           echo $html;
       } else {
@@ -114,6 +118,16 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
                       $t = preg_replace('~^0(?=\d)~', '', $t);
                   }
                   $node->textContent = $t;
+              }
+          }
+
+          // Route every raw "index.php?..." link through Joomla's router so
+          // event hrefs render root-relative and SEF instead of raw query URLs.
+          $linkNodes = $xpath->query('//a[@href]');
+          foreach ($linkNodes as $link) {
+              $href = trim($link->getAttribute('href'));
+              if (stripos($href, 'index.php') === 0 && class_exists('JRoute')) {
+                  $link->setAttribute('href', JRoute::_($href));
               }
           }
 
