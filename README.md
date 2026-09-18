@@ -87,8 +87,9 @@ You can then safely uninstall `mod_facilitycalendar_event_list` if desired.
 The post-flight script (`script.php`) runs after install and update:
 
 1. Validates minimum Joomla (3.8.0) and PHP (7.4.0) versions
-2. Deploys template overrides and media files from the package to Joomla's directories
+2. Files are deployed natively by the package's child file extension (Joomla 3 `<fileset>` handling), not by the script
 3. Loads the package language files
+4. Removes the orphaned legacy `modernsoftblue` child extension record only after verifying it is actually this package's row (foreign rows are refused with a warning, never deleted)
 4. Locates `modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml`
 5. Checks if the `layout` field (type `modulelayout`) already exists — if so, skips
 6. Injects the field into the `<fieldset name="advanced">` block using DOMDocument
@@ -121,6 +122,15 @@ facilitycalendar-modernsoftblue/
                         ├── modernsoftblue.php
                         └── index.html
 ```
+
+## Operations & trust (read before installing on a production site)
+
+- **Required PHP extensions:** `dom`/`xml` (layout rendering and manifest patching need `DOMDocument`; without it the installer refuses the patch and the layout serves upstream HTML unprocessed). `mbstring`, `json` per Joomla core.
+- **What install touches outside this package:** exactly one third-party file — `modules/mod_facilitycalendar_event_list/mod_facilitycalendar_event_list.xml`, where a `layout` field is added. The original is backed up with a checksum record; uninstall restores it only if the live file is still byte-identical to what the patch wrote. If the module was updated afterwards, uninstall refuses the restore and keeps the backup — check it manually.
+- **What uninstall deletes:** the deployed override/CSS/language files, the legacy `modernsoftblue` child record (only after name verification), and stray package manifests from older broken releases. It never follows symlinks and never deletes database rows it cannot prove are its own.
+- **Installer lock:** `mod_facilitycalendar_event_list.msb-lock` in Joomla's tmp dir. Locks older than 15 minutes are treated as stale (crashed install) and cleared with a notice; anything younger blocks concurrent installs.
+- **Update feed trust:** updates are unsigned. The feed (`update.xml`) carries a sha256 that Joomla verifies, but anyone with repo write access can ship code to every site. Keep the GitHub token scoped to this repo, enforce 2FA, and diff each release zip against its tag before installing anywhere that matters.
+- **Logging:** installer/layout warnings go to Joomla's log (`jerror` / module category) as well as the admin message queue. If something misbehaves, check the log before reinstalling.
 
 ## License
 

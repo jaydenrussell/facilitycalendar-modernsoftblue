@@ -5,17 +5,22 @@
         <description>Modern Soft Blue card-style theme for mod_facilitycalendar_event_list</description>
         <element>pkg_facilitycalendar-upcomingeventlist-modernsoftblue</element>
         <type>package</type>
-        <version>1.5.27</version>
+        <version>1.5.28</version>
         <client>site</client>
         <targetplatform name="joomla" version="3\.[0-9]+" />
         <infourl>https://github.com/jaydenrussell/facilitycalendar-modernsoftblue</infourl>
         <downloads>
-            <downloadurl type="full" format="zip" sha256="0799c143b7c9bc675dff1a615040e17c1e1583414a096e6eb50ee4f43ae5ef3b">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/latest/download/facilitycalendar-upcomingeventlist-modernsoftblue.zip</downloadurl>
+            <downloadurl type="full" format="zip" sha256="38e7dc7f0d024ff8fdc4bef698701af3dc0bde49bd05a22c2cec713f15b99677">https://github.com/jaydenrussell/facilitycalendar-modernsoftblue/releases/latest/download/facilitycalendar-upcomingeventlist-modernsoftblue.zip</downloadurl>
         </downloads>
         <tags><tag>stable</tag></tags>
         <maintainer>jaydenrussell</maintainer>
         <maintainerurl>https://github.com/jaydenrussell</maintainerurl>
         <changelogurl>https://raw.githubusercontent.com/jaydenrussell/facilitycalendar-modernsoftblue/master/CHANGELOG.xml</changelogurl>
+    </update>
+    <update version="1.5.27">
+        <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>
+        <description>Fix layout override fatal parse error and route event links through JRoute for SEF URLs.</description>
+        <date>2026-09-03</date>
     </update>
     <update version="1.5.26">
         <name>Facility Calendar Upcoming Event List - Modern Soft Blue</name>

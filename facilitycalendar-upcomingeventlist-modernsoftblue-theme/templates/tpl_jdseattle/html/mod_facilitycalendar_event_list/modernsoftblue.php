@@ -94,7 +94,23 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
       require $modTmplReal;
       $html = ob_get_clean();
 
-      if (strlen($html) > $maxBufferSize) {
+      // Without the DOM extension there is nothing safe to transform: output
+      // upstream HTML untouched rather than fatal the whole module position.
+      // (Logged at most once per request to avoid log spam on every page view.)
+      static $msbLogged = false;
+      $msbLogOnce = function ($message) use (&$msbLogged) {
+          if ($msbLogged || !class_exists('JLog')) {
+              return;
+          }
+          $msbLogged = true;
+          \JLog::add('mod_facilitycalendar_event_list modernsoftblue layout: ' . $message, \JLog::WARNING, 'mod_facilitycalendar_event_list');
+      };
+
+      if (!class_exists('DOMDocument')) {
+          $msbLogOnce('PHP DOM extension missing; serving unprocessed upstream output.');
+          echo $html;
+      } elseif (strlen($html) > $maxBufferSize) {
+          $msbLogOnce('Upstream output exceeds ' . round($maxBufferSize / 1024) . 'KB limit; serving unprocessed output.');
           if (Factory::getApplication()->get('debug')) {
               echo '<p><strong>[msb]</strong> Upstream output exceeds ' . round($maxBufferSize / 1024) . 'KB limit; skipping post-processing to preserve memory.</p>';
           }
@@ -121,12 +137,17 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
               }
           }
 
-          // Route every raw "index.php?..." link through Joomla's router so
-          // event hrefs render root-relative and SEF instead of raw query URLs.
+          // Route facility-calendar links through Joomla's router so event
+          // hrefs render root-relative and SEF instead of raw query URLs.
+          // Allowlisted to this component's URLs only: this override must not
+          // rewrite links belonging to other extensions if upstream output
+          // ever contains them.
           $linkNodes = $xpath->query('//a[@href]');
           foreach ($linkNodes as $link) {
               $href = trim($link->getAttribute('href'));
-              if (stripos($href, 'index.php') === 0 && class_exists('JRoute')) {
+              if (stripos($href, 'index.php') === 0
+                  && stripos($href, 'com_facilitycalendar') !== false
+                  && class_exists('JRoute')) {
                   $link->setAttribute('href', JRoute::_($href));
               }
           }
@@ -144,6 +165,10 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
           if ($out !== '' && $originalLength > 0 && abs($originalLength - $transformedLength) <= $originalLength * 0.2) {
               echo $out;
           } else {
+              // Structural fallback: the transform produced something
+              // unexpectedly different, so serve upstream output untouched
+              // rather than a mangled card. Logged so the skip is visible.
+              $msbLogOnce('DOM transform diverged from upstream output; serving unprocessed output.');
               echo $html;
           }
       }
