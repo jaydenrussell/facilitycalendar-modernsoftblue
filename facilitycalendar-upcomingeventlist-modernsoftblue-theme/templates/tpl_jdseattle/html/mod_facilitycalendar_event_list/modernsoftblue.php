@@ -62,19 +62,23 @@ HTMLHelper::stylesheet(
 /** Guard: fatal error is worse than a graceful skip */
 if (!file_exists($modTmpl)) : ?>
   <?php if (Factory::getApplication()->get('debug')) : ?>
-    <p><strong>[msb]</strong> Upstream layout not found: <code><?php echo htmlspecialchars($modTmpl, ENT_QUOTES, 'UTF-8'); ?></code></p>
+    <p><strong>[msb]</strong> Upstream layout not found: <code>mod_facilitycalendar_event_list/tmpl/default.php</code></p>
   <?php endif; ?>
   <?php return; ?>
 <?php endif; ?>
 
 <?php
-/** Validate the upstream template path: must be a regular file within the upstream module's tmpl directory, not a symlink or device. */
+/** Validate the upstream template path. Both sides are canonicalized with
+realpath() before comparing: matching a resolved path against a raw base
+breaks on symlinked, junction, or short-name docroots (e.g. atomic-deploy
+"current" symlinks), which would silently disable the module exactly on
+well-run infrastructure. Refuse only when something is genuinely unresolvable. */
 $modTmplReal = realpath($modTmpl);
-$modTmplDir = JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl/';
+$modTmplDirReal = realpath(JPATH_BASE . '/modules/mod_facilitycalendar_event_list/tmpl');
 
-if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_replace('\\', '/', $modTmplDir)) !== 0) : ?>
+if ($modTmplReal === false || $modTmplDirReal === false || strpos(str_replace('\\', '/', $modTmplReal), rtrim(str_replace('\\', '/', $modTmplDirReal), '/') . '/') !== 0) : ?>
   <?php if (Factory::getApplication()->get('debug')) : ?>
-    <p><strong>[msb]</strong> Upstream layout path invalid or outside module directory: <code><?php echo htmlspecialchars($modTmpl, ENT_QUOTES, 'UTF-8'); ?></code></p>
+    <p><strong>[msb]</strong> Upstream layout path invalid or outside module directory: <code>mod_facilitycalendar_event_list/tmpl/default.php</code></p>
   <?php endif; ?>
   <?php return; ?>
 <?php endif; ?>
@@ -116,6 +120,16 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
           }
           echo $html;
       } else {
+          // DOMDocument::loadHTML defaults to Latin-1 without charset info,
+          // which corrupts non-ASCII event titles. Normalize to HTML entities
+          // first so UTF-8 survives the round-trip; without mbstring, declare
+          // the encoding instead (same guarantee, no extension required).
+          if (function_exists('mb_convert_encoding')) {
+              $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
+          } else {
+              $html = '<?xml encoding="UTF-8">' . $html;
+          }
+
           $dom = new DOMDocument();
           $dom->preserveWhiteSpace = true;
           $dom->formatOutput = false;
@@ -139,17 +153,20 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
 
           // Route facility-calendar links through Joomla's router so event
           // hrefs render root-relative and SEF instead of raw query URLs.
-          // Allowlisted to this component's URLs only: this override must not
-          // rewrite links belonging to other extensions if upstream output
-          // ever contains them.
+          // Exact component match: a substring test would also accept
+          // lookalike options such as com_facilitycalendar_evil.
           $linkNodes = $xpath->query('//a[@href]');
           foreach ($linkNodes as $link) {
               $href = trim($link->getAttribute('href'));
-              if (stripos($href, 'index.php') === 0
-                  && stripos($href, 'com_facilitycalendar') !== false
-                  && class_exists('JRoute')) {
-                  $link->setAttribute('href', JRoute::_($href));
+              if (stripos($href, 'index.php') !== 0 || !class_exists('JRoute')) {
+                  continue;
               }
+              $msbQuery = array();
+              parse_str((string) parse_url($href, PHP_URL_QUERY), $msbQuery);
+              if (!isset($msbQuery['option']) || $msbQuery['option'] !== 'com_facilitycalendar') {
+                  continue;
+              }
+              $link->setAttribute('href', JRoute::_($href));
           }
 
           $body = $dom->getElementsByTagName('body')->item(0);
@@ -160,14 +177,17 @@ if ($modTmplReal === false || strpos(str_replace('\\', '/', $modTmplReal), str_r
               }
           }
 
-          $originalLength = strlen($html);
-          $transformedLength = strlen($out);
-          if ($out !== '' && $originalLength > 0 && abs($originalLength - $transformedLength) <= $originalLength * 0.2) {
+          // Structural check, not a length heuristic: routing hrefs through SEF
+          // legitimately shifts total byte length, so byte-counting the output
+          // would false-negative on link-heavy lists and silently disable the
+          // feature. What must hold is structure: same links in, same links out.
+          $msbInLinks = preg_match_all('~<a\s[^>]*href=~i', $html);
+          $msbOutLinks = preg_match_all('~<a\s[^>]*href=~i', $out);
+          if ($out !== '' && $msbInLinks !== false && $msbOutLinks === $msbInLinks) {
               echo $out;
           } else {
-              // Structural fallback: the transform produced something
-              // unexpectedly different, so serve upstream output untouched
-              // rather than a mangled card. Logged so the skip is visible.
+              // Fallback serves upstream output untouched rather than a mangled
+              // card. Logged so the skip is visible instead of silent.
               $msbLogOnce('DOM transform diverged from upstream output; serving unprocessed output.');
               echo $html;
           }

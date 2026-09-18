@@ -20,8 +20,11 @@ use Joomla\CMS\Language\Text;
 
 class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
 {
-    private string $minimumJoomla = '3.8.0';
-    private string $minimumPhp    = '7.4.0';
+    // Untyped deliberately: typed properties are a PHP 7.4 compile-time feature,
+    // and this file must load on older PHP precisely so preflight() can abort
+    // cleanly there instead of fataling the whole install.
+    private $minimumJoomla = '3.8.0';
+    private $minimumPhp    = '7.4.0';
 
     private const MODULE_NAME     = 'mod_facilitycalendar_event_list';
     // JPATH_ROOT (site root) deliberately: installer scripts execute in the
@@ -42,7 +45,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
      * Log to Joomla's log system. Installer failures must leave a trace;
      * silent catches inherit silent breakage to the next maintainer.
      */
-    private function log(string $message): void
+    private function log(string $message)
     {
         if (class_exists('JLog')) {
             \JLog::add(
@@ -87,7 +90,10 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             }
         }
 
-        $this->removeRecursive(JPATH_ROOT . '/facilitycalendar-upcomingeventlist-modernsoftblue-theme/');
+        // This staging dirname only ever existed inside the install package;
+        // it is never deployed to the site (the child extension deploys files
+        // to their final locations, which Joomla's FileAdapter removes). The
+        // call is intentionally gone: dead recursive deletes rot into hazards.
 
         $manifestDir = JPATH_ADMINISTRATOR . '/manifests/packages/';
         foreach (['facilitycalendar-modernsoftblue.xml', 'pkg_facilitycalendar-upcomingeventlist-modernsoftblue.xml'] as $stray) {
@@ -119,6 +125,11 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
     public function preflight(string $type, $adapter): bool
     {
         $app = Factory::getApplication();
+
+        // Load package language first so version-abort messages translate
+        // instead of showing raw keys (harmless no-op on fresh installs where
+        // the child has not deployed the files yet).
+        $this->loadLanguageFiles();
 
         if (version_compare(PHP_VERSION, $this->minimumPhp, '<')) {
             $app->enqueueMessage(
@@ -177,7 +188,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
      * backup is stale and restoring it would silently downgrade a third-party
      * extension — so refuse, keep the backup, and say so loudly.
      */
-    private function restoreModuleManifest($app, string $backupPath, string $metaPath): void
+    private function restoreModuleManifest($app, string $backupPath, string $metaPath)
     {
         if (!class_exists('DOMDocument')) {
             $this->log('Cannot verify module manifest during uninstall: DOM extension missing. Manifest left untouched.');
@@ -264,47 +275,6 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         );
     }
 
-    private function removeRecursive(string $dir): void
-    {
-        // Never descend into a symlinked directory: is_dir() follows links, and
-        // deleting through one would destroy files outside the target tree.
-        if (!is_dir($dir) || is_link($dir)) {
-            if (is_link($dir)) {
-                $this->log('Refusing to descend into symlinked directory during uninstall: ' . $dir);
-            }
-            return;
-        }
-
-        $items = scandir($dir);
-        if (!is_array($items)) {
-            $this->log('Unable to list directory during uninstall: ' . $dir);
-            return;
-        }
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-
-            $path = $dir . $item;
-            // A symlink is never traversed. It is left in place and reported;
-            // removing the link itself is safe but silent removal hides a
-            // compromised-tree signal from the operator.
-            if (is_link($path)) {
-                $this->log('Skipping symlink during uninstall (left in place): ' . $path);
-                continue;
-            }
-            if (is_dir($path)) {
-                $this->removeRecursive($path . '/');
-            } elseif (!@unlink($path)) {
-                $this->log('Unable to delete file during uninstall: ' . $path);
-            }
-        }
-
-        if (!@rmdir($dir)) {
-            $this->log('Unable to remove directory during uninstall (may contain skipped symlinks): ' . $dir);
-        }
-    }
-
     /**
      * Remove the legacy child file-extension record that older releases
      * registered with the ambiguous element "modernsoftblue".
@@ -315,7 +285,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
      * deleting foreign extension rows would break other extensions with no
      * undo. Failures are logged, never swallowed.
      */
-    private function removeLegacyChild(): void
+    private function removeLegacyChild()
     {
         try {
             $db = Factory::getDbo();
@@ -362,7 +332,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         }
     }
 
-    private function loadLanguageFiles(): void
+    private function loadLanguageFiles()
     {
         $langDir = JPATH_ROOT . '/language/en-GB/';
 
@@ -428,7 +398,7 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         return $handle;
     }
 
-    private function releaseLock($handle): void
+    private function releaseLock($handle)
     {
         if (!is_resource($handle)) {
             return;
@@ -577,7 +547,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
             if (file_exists($tmpPath)) { @unlink($tmpPath); }
             $this->releaseLock($lockHandle);
             if (file_exists(self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
-                copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
+                if (!@copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH)) {
+                    $this->log('Rollback copy failed after temp-write failure; module manifest may be inconsistent: ' . self::MODULE_XML_PATH);
+                }
             }
             $app->enqueueMessage(
                 Text::_('PKG_FACILITYCALENDAR_UPCOMINGEVENTLIST_MODERNSOFTBLUE_WRITE_FAILED'),
@@ -589,7 +561,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         if (!rename($tmpPath, self::MODULE_XML_PATH)) {
             if (file_exists($tmpPath)) { @unlink($tmpPath); }
             if (file_exists(self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
-                copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
+                if (!@copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH)) {
+                    $this->log('Rollback copy failed after rename failure; module manifest may be inconsistent: ' . self::MODULE_XML_PATH);
+                }
             }
             $this->releaseLock($lockHandle);
             $app->enqueueMessage(
@@ -628,7 +602,9 @@ class pkg_facilitycalendar_upcomingeventlist_modernsoftblueInstallerScript
         if ($meta === false || @file_put_contents(self::MODULE_XML_PATH . self::META_SUFFIX, $meta, LOCK_EX) === false) {
             $this->log('Could not write module manifest integrity record; rolling back patch: ' . self::MODULE_XML_PATH);
             if (file_exists(self::MODULE_XML_PATH . self::BACKUP_SUFFIX)) {
-                copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH);
+                if (!@copy(self::MODULE_XML_PATH . self::BACKUP_SUFFIX, self::MODULE_XML_PATH)) {
+                    $this->log('Rollback copy failed after integrity-record failure; module manifest may be inconsistent: ' . self::MODULE_XML_PATH);
+                }
             }
             $this->releaseLock($lockHandle);
             $app->enqueueMessage(
